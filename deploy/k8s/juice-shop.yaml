@@ -121,7 +121,7 @@ metadata:
   name: juice-shop
   namespace: juice-shop
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: juice-shop
   ports:
