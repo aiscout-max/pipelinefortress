@@ -287,11 +287,14 @@ jobs:
   # ------------------------------------------------------------------ report
 
   consolidate:
-    name: Consolidate findings
+    name: Consolidate findings & dashboard
     needs: [security-gate, image, deploy-dast]
     if: always() && needs.security-gate.result != 'skipped'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read  # job timings for the feedback-time metric
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -317,9 +320,35 @@ jobs:
             --policy security/gate-policy.toml \
             --summary "$GITHUB_STEP_SUMMARY" \
             --write-baseline reports/baseline-candidate.json || true
+      - name: Fetch job timings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" > reports/run.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs" > reports/jobs.json
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true  # absent when the image job failed
+        with:
+          name: sbom
+          path: reports
+      - name: Render dashboard
+        run: |
+          python3 -m fortress.dashboard \
+            --findings reports/findings.json \
+            --baseline security/baselines/baseline.json \
+            --policy security/gate-policy.toml \
+            --run reports/run.json --jobs reports/jobs.json \
+            --seeded metrics/seeded-results.json \
+            --sbom reports/sbom.cdx.json \
+            -o reports/dashboard.html
+          echo "Metrics dashboard: download the **metrics-dashboard** artifact and open dashboard.html." >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: consolidated-findings
           path: |
             reports/findings.json
             reports/baseline-candidate.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: metrics-dashboard
+          path: reports/dashboard.html
