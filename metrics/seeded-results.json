@@ -1,0 +1,176 @@
+{
+  "collected": "2026-10-28T18:37:24+00:00",
+  "control": {
+    "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744538994",
+    "noise_stages": []
+  },
+  "experiments": [
+    {
+      "id": "01",
+      "title": "Hard-coded payment API key in a new config module",
+      "expected": "secrets",
+      "caught_by": [
+        "secrets"
+      ],
+      "blocked": true,
+      "failed_jobs": [
+        "Secrets (gitleaks)"
+      ],
+      "new_by_stage": {},
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744550399",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/3"
+    },
+    {
+      "id": "02",
+      "title": "API key committed, then deleted in a follow-up commit",
+      "expected": "secrets",
+      "caught_by": [
+        "secrets"
+      ],
+      "blocked": true,
+      "failed_jobs": [
+        "Secrets (gitleaks)"
+      ],
+      "new_by_stage": {},
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744568527",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/4"
+    },
+    {
+      "id": "03",
+      "title": "New route builds raw SQL from a URL parameter",
+      "expected": "sast",
+      "caught_by": [
+        "sast"
+      ],
+      "blocked": true,
+      "failed_jobs": [
+        "Security gate (pre-build)"
+      ],
+      "new_by_stage": {
+        "sast": 2
+      },
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744579956",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/5"
+    },
+    {
+      "id": "04",
+      "title": "TLS certificate verification disabled process-wide",
+      "expected": "sast",
+      "caught_by": [
+        "sast"
+      ],
+      "blocked": true,
+      "failed_jobs": [
+        "Security gate (pre-build)"
+      ],
+      "new_by_stage": {
+        "sast": 1
+      },
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744591130",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/6"
+    },
+    {
+      "id": "05",
+      "title": "JWT verification accepts the 'none' algorithm",
+      "expected": "sast",
+      "caught_by": [],
+      "blocked": false,
+      "failed_jobs": [],
+      "new_by_stage": {},
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744605845",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/7"
+    },
+    {
+      "id": "06",
+      "title": "Direct dependency on minimist 1.2.5 (critical, fix available)",
+      "expected": "sca",
+      "caught_by": [
+        "sca"
+      ],
+      "blocked": true,
+      "failed_jobs": [
+        "Security gate (pre-build)"
+      ],
+      "new_by_stage": {
+        "sca": 1
+      },
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744621975",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/8"
+    },
+    {
+      "id": "07",
+      "title": "Deployment runs the container privileged",
+      "expected": "iac",
+      "caught_by": [
+        "iac"
+      ],
+      "blocked": true,
+      "failed_jobs": [
+        "Security gate (pre-build)"
+      ],
+      "new_by_stage": {
+        "iac": 1
+      },
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744633688",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/9"
+    },
+    {
+      "id": "08",
+      "title": "Staging Service exposed as NodePort (custom policy)",
+      "expected": "iac",
+      "caught_by": [
+        "iac"
+      ],
+      "blocked": true,
+      "failed_jobs": [
+        "Security gate (pre-build)"
+      ],
+      "new_by_stage": {
+        "iac": 1
+      },
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744648884",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/10"
+    },
+    {
+      "id": "09",
+      "title": "Runtime image switched from distroless to full Debian",
+      "expected": "container",
+      "caught_by": [
+        "container"
+      ],
+      "blocked": false,
+      "failed_jobs": [],
+      "new_by_stage": {
+        "container": 4452
+      },
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744658668",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/11"
+    },
+    {
+      "id": "10",
+      "title": "Every response sets a cookie without HttpOnly or SameSite",
+      "expected": "dast",
+      "caught_by": [
+        "dast"
+      ],
+      "blocked": false,
+      "failed_jobs": [],
+      "new_by_stage": {
+        "dast": 2
+      },
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744672490",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/12"
+    },
+    {
+      "id": "11",
+      "title": "Admin user-export endpoint with no authorization check",
+      "expected": "none",
+      "caught_by": [],
+      "blocked": false,
+      "failed_jobs": [],
+      "new_by_stage": {},
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744685398",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/13"
+    }
+  ]
+}

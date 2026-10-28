@@ -96,6 +96,17 @@ def test_partial_gate_only_counts_its_own_stages():
     assert result["resolved"] == 0  # the resolved SAST entry is not this job's business
 
 
+def test_regression_budget_blocks_a_flood_of_low_findings():
+    lodash = next(f for f in all_findings() if f.get("package") == "lodash")
+    flood = [{**lodash, "category": "container", "severity": "LOW", "fixed_version": None,
+              "fingerprint": f"{n:064x}"} for n in range(60)]
+    policy = {**POLICY, "container": {**POLICY["container"], "max_new": 50}}
+    result = gate.evaluate(flood, {"old": "container"}, policy, {"container"})
+    assert result["blocking"] == []  # no single finding crosses the threshold
+    assert result["over_budget"] == {"container": 60}
+    assert gate.evaluate(flood[:50], {"old": "container"}, policy, {"container"})["over_budget"] == {}
+
+
 def test_legacy_baseline_without_category_still_loads(tmp_path):
     path = tmp_path / "baseline.json"
     path.write_text(json.dumps({"fingerprints": {"abc": {"tool": "gitleaks", "rule_id": "jwt", "file": "x"}}}))

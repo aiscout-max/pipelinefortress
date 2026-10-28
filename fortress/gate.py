@@ -69,10 +69,16 @@ def evaluate(findings: list[dict], baseline: dict[str, str] | None, policy: dict
     current = {f["fingerprint"] for f in findings}
     baselined_stages = {cat for cat in baseline.values() if cat in stages}
     new = [f for f in findings if f["fingerprint"] not in baseline]
+    new_per_stage = Counter(f["category"] for f in new)
+    # Regression budget: a flood of new findings blocks even when no single one
+    # crosses the severity threshold (e.g. swapping distroless for a full OS image).
+    over_budget = {cat: new_per_stage[cat] for cat in baselined_stages
+                   if "max_new" in policy.get(cat, {}) and new_per_stage[cat] > policy[cat]["max_new"]}
     return {
         "findings": findings,
         "new": new,
         "blocking": [f for f in new if f["category"] in baselined_stages and is_blocking(f, policy)],
+        "over_budget": over_budget,
         "bootstrap": stages - baselined_stages,
         "resolved": sum(1 for fp, cat in baseline.items() if cat in stages and fp not in current),
     }
@@ -90,10 +96,15 @@ def render_summary(result: dict, policy: dict, stages: set[str]) -> str:
     for cat in sorted(stages):
         rule = policy.get(cat, {})
         threshold = rule.get("fail_on", "—") + (" (fix available)" if rule.get("require_fix") else "")
+        if "max_new" in rule:
+            threshold += f", or > {rule['max_new']} new"
         if cat in result["bootstrap"]:
             threshold = "bootstrap (report only)"
         out.append(f"| {cat} | {total[cat]} | {new[cat]} | {blocking[cat]} | {threshold} |")
     out += ["", f"Resolved since baseline: **{result['resolved']}**", ""]
+    for cat, count in sorted(result["over_budget"].items()):
+        out += [f"**Regression budget exceeded:** {count} new {cat} findings "
+                f"(budget {policy[cat]['max_new']}). This blocks the build.", ""]
     if result["blocking"]:
         out += ["### Blocking findings", "", "| Severity | Stage | Rule | Location |", "|---|---|---|---|"]
         for f in sorted(result["blocking"], key=lambda f: -severity_rank(f["severity"])):
@@ -129,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.write_baseline:
         write_baseline(result["findings"], args.write_baseline)
 
-    return 1 if result["blocking"] else 0
+    return 1 if result["blocking"] or result["over_budget"] else 0
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from collections import defaultdict
@@ -27,6 +28,7 @@ from . import severity_rank
 from .redact import NEVER_SEND_CATEGORIES, RedactionError, Redactor
 
 DEFAULT_MODEL = "gemini-flash-latest"
+RETRY_DELAYS = [10, 30, 90]  # seconds
 BATCH_SIZE = 10
 MAX_CLUSTERS = 30
 _ID = re.compile(r"\b(?:CVE-\d{4}-\d{4,}|GHSA(?:-[a-z0-9]{4}){3})\b")
@@ -132,9 +134,18 @@ def gemini(payload_text: str, model: str, api_key: str) -> dict:
         data=json.dumps(body).encode(),
         headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
     )
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        answer = json.load(resp)
-    return json.loads(answer["candidates"][0]["content"]["parts"][0]["text"])
+    # The free tier answers 429/503 under load; back off rather than give up on the batch.
+    for attempt, delay in enumerate(RETRY_DELAYS + [None]):
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                answer = json.load(resp)
+            return json.loads(answer["candidates"][0]["content"]["parts"][0]["text"])
+        except urllib.error.HTTPError as err:
+            if err.code not in (429, 500, 503) or delay is None:
+                raise
+            print(f"model returned HTTP {err.code}; retry {attempt + 1} in {delay}s", file=sys.stderr)
+            time.sleep(delay)
+    raise AssertionError("unreachable")
 
 
 def outbound_view(cluster: dict, redactor: Redactor) -> dict:
@@ -204,8 +215,9 @@ def triage(findings: list[dict], audit_dir: Path, model: str, api_key: str | Non
         try:
             answer = gemini(payload, model, api_key or "")
         except (urllib.error.URLError, KeyError, ValueError) as err:
+            reason = f"HTTP {err.code}" if isinstance(err, urllib.error.HTTPError) else type(err).__name__
             for c in batch:
-                c.update(status="needs human triage", rationale=f"Model call failed ({type(err).__name__}).")
+                c.update(status="needs human triage", rationale=f"Model call failed ({reason}).")
             continue
         by_id = {r.get("cluster_id"): r for r in answer.get("results", [])}
         for c in batch:

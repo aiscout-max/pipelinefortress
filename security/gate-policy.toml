@@ -27,6 +27,11 @@ fail_on = "LOW"
 # (OS packages of the base image plus production node_modules).
 fail_on = "CRITICAL"
 require_fix = true
+# Regression budget, added after seed 09: replacing distroless with a full
+# Debian image added 4,452 findings, none critical-with-fix, and passed.
+# Routine base-image refreshes add a handful; hundreds means the attack
+# surface itself changed.
+max_new = 50
 
 [dast]
 # ZAP baseline is passive; HIGH-risk alerts on a new build are regressions.
