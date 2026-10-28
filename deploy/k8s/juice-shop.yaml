@@ -49,7 +49,7 @@ spec:
             - -e
             - >-
               const fs = require('node:fs');
-              for (const d of ['frontend/dist', 'ftp', 'i18n', 'data', 'uploads'])
+              for (const d of ['frontend/dist', 'ftp', 'i18n', 'data', 'uploads', '.well-known'])
               fs.cpSync('/juice-shop/' + d, '/state/' + d, { recursive: true });
           securityContext: &containerSecurity
             allowPrivilegeEscalation: false
@@ -87,6 +87,8 @@ spec:
             - { name: state, mountPath: /juice-shop/i18n, subPath: i18n }
             - { name: state, mountPath: /juice-shop/data, subPath: data }
             - { name: state, mountPath: /juice-shop/uploads, subPath: uploads }
+            # data/datacreator.ts rewrites the CSAF provider metadata at startup
+            - { name: state, mountPath: /juice-shop/.well-known, subPath: .well-known }
             - { name: logs, mountPath: /juice-shop/logs }
             - { name: tmp, mountPath: /tmp }
           readinessProbe:
