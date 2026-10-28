@@ -80,3 +80,8 @@ reports/
 
 # PipelineFortress: lockfiles are committed (overrides the ignore above)
 !package-lock.json
+
+# PipelineFortress Python tooling
+__pycache__/
+*.pyc
+.pytest_cache/
