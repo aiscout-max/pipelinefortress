@@ -30,6 +30,10 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          # Second run spent 9m40s downloading from the npm registry; the
+          # cache keeps feedback time stable when the registry is slow.
+          cache: npm
+          cache-dependency-path: package-lock.json
       - name: Install from lockfile
         run: npm ci --no-audit --no-fund
       - name: Server unit tests
