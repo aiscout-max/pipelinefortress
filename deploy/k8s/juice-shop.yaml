@@ -45,7 +45,7 @@ spec:
           image: juice-shop:ci
           imagePullPolicy: IfNotPresent
           command:
-            - /nodejs/bin/node
+            - /usr/local/bin/node
             - -e
             - >-
               const fs = require('node:fs');
