@@ -1,0 +1,51 @@
+name: GenAI triage
+
+# Read-only: triage never changes the repository. Opening remediation PRs is a
+# separate, deliberately triggered workflow (remediate.yml).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: genai-triage
+  cancel-in-progress: false
+
+env:
+  GITLEAKS_VERSION: 8.30.1
+
+jobs:
+  triage:
+    name: Triage latest master findings
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read  # download the pipeline's consolidated findings
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Fetch consolidated findings from the latest green master run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id=$(gh run list --workflow pipeline.yml --branch master --status success --limit 1 \
+            --json databaseId -q '.[0].databaseId')
+          echo "source run: ${run_id}" | tee -a "$GITHUB_STEP_SUMMARY"
+          gh run download "$run_id" -n consolidated-findings -D reports
+      - name: Triage (redacted payloads only)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 -m fortress.triage --findings reports/findings.json -o reports/triage
+      # Proof for the redaction rubric: scan exactly what was sent to the model.
+      - name: Verify nothing secret left the runner
+        run: |
+          security/install-tools.sh gitleaks
+          gitleaks dir reports/triage/llm-audit --redact --no-banner --exit-code 1
+          echo "gitleaks: no secrets in $(find reports/triage/llm-audit -type f | wc -l) audited payloads" >> "$GITHUB_STEP_SUMMARY"
+      - name: Summary
+        run: cat reports/triage/triage.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: genai-triage
+          path: reports/triage
