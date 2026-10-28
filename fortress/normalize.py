@@ -151,6 +151,55 @@ def from_trivy(report: dict, category: str = "sca") -> list[Finding]:
     return findings
 
 
+# --- Checkov (JSON, one report per framework) -------------------------------
+
+def from_checkov(report: dict | list) -> list[Finding]:
+    reports = report if isinstance(report, list) else [report]
+    findings = []
+    for rep in reports:
+        for c in rep.get("results", {}).get("failed_checks", []):
+            sev = str(c.get("severity") or "MEDIUM").upper()  # OSS Checkov reports no severity
+            path = c["file_path"].lstrip("/")
+            findings.append(Finding(
+                tool="checkov",
+                category="iac",
+                rule_id=c["check_id"],
+                title=c["check_name"][:200],
+                severity=sev if sev in SEVERITIES else "MEDIUM",
+                file=path,
+                line=(c.get("file_line_range") or [None])[0],
+                # Resource names (e.g. aws_security_group.lb) are stable across
+                # edits; line ranges are not.
+                fingerprint=_digest("checkov", c["check_id"], path, c.get("resource")),
+            ))
+    return findings
+
+
+# --- OWASP ZAP baseline (JSON) ----------------------------------------------
+
+_ZAP_RISK = {"3": "HIGH", "2": "MEDIUM", "1": "LOW", "0": "INFO"}
+
+
+def from_zap(report: dict) -> list[Finding]:
+    # Instances carry request/response evidence (cookies, tokens, bodies).
+    # Only the alert type is kept: one finding per alert per site.
+    findings = []
+    for site in report.get("site", []):
+        for a in site.get("alerts", []):
+            ref = a.get("alertRef") or a["pluginid"]
+            cwe = str(a.get("cweid", ""))
+            findings.append(Finding(
+                tool="zap",
+                category="dast",
+                rule_id=ref,
+                title=a.get("alert") or a.get("name", ref),
+                severity=_ZAP_RISK.get(str(a.get("riskcode")), "INFO"),
+                cwe=[f"CWE-{cwe}"] if cwe.isdigit() and int(cwe) > 0 else [],
+                fingerprint=_digest("zap", ref),
+            ))
+    return findings
+
+
 def dedupe(findings: list[Finding]) -> list[Finding]:
     """Drop exact duplicates (same fingerprint), e.g. one CVE listed by two lockfiles."""
     seen: dict[str, Finding] = {}
@@ -168,6 +217,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--semgrep", type=Path)
     p.add_argument("--gitleaks", type=Path)
     p.add_argument("--trivy-fs", type=Path)
+    p.add_argument("--trivy-image", type=Path)
+    p.add_argument("--checkov", type=Path)
+    p.add_argument("--zap", type=Path)
     p.add_argument("--source-root", type=Path, default=Path("."))
     p.add_argument("-o", "--output", type=Path, required=True)
     args = p.parse_args(argv)
@@ -179,6 +231,12 @@ def main(argv: list[str] | None = None) -> int:
         findings += from_gitleaks(json.loads(args.gitleaks.read_text() or "[]"))
     if args.trivy_fs:
         findings += from_trivy(json.loads(args.trivy_fs.read_text()), "sca")
+    if args.trivy_image:
+        findings += from_trivy(json.loads(args.trivy_image.read_text()), "container")
+    if args.checkov:
+        findings += from_checkov(json.loads(args.checkov.read_text()))
+    if args.zap:
+        findings += from_zap(json.loads(args.zap.read_text()))
 
     findings = dedupe(findings)
     args.output.parent.mkdir(parents=True, exist_ok=True)
