@@ -18,10 +18,16 @@ from pathlib import Path
 from . import severity_rank
 
 
-def load_baseline(path: Path) -> set[str] | None:
+# Baselines written before the category field existed only record the tool.
+_LEGACY_CATEGORY = {"semgrep": "sast", "gitleaks": "secrets", "trivy": "sca"}
+
+
+def load_baseline(path: Path) -> dict[str, str] | None:
+    """Map of fingerprint -> category, or None when no baseline is committed."""
     if not path.exists():
         return None
-    return set(json.loads(path.read_text())["fingerprints"])
+    entries = json.loads(path.read_text())["fingerprints"]
+    return {fp: meta.get("category") or _LEGACY_CATEGORY[meta["tool"]] for fp, meta in entries.items()}
 
 
 def write_baseline(findings: list[dict], path: Path) -> None:
@@ -30,7 +36,8 @@ def write_baseline(findings: list[dict], path: Path) -> None:
         "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "note": "Accepted pre-existing findings. Regenerate only with a reviewed justification.",
         "fingerprints": {
-            f["fingerprint"]: {"tool": f["tool"], "rule_id": f["rule_id"], "file": f["file"]}
+            f["fingerprint"]: {"tool": f["tool"], "category": f["category"],
+                               "rule_id": f["rule_id"], "file": f["file"]}
             for f in sorted(findings, key=lambda f: f["fingerprint"])
         },
     }, indent=2) + "\n")
@@ -47,28 +54,44 @@ def is_blocking(finding: dict, policy: dict) -> bool:
     return True
 
 
-def evaluate(findings: list[dict], baseline: set[str] | None, policy: dict) -> dict:
+def evaluate(findings: list[dict], baseline: dict[str, str] | None, policy: dict,
+             stages: set[str] | None = None) -> dict:
+    """Compare findings of the given stages (default: every stage in the policy)
+    with the baseline.
+
+    A stage with no baseline entries at all is in bootstrap: its findings are
+    reported but never block. That lets a new scanner join the pipeline without
+    failing every open PR on its first run.
+    """
+    stages = stages or set(policy)
+    baseline = baseline or {}
+    findings = [f for f in findings if f["category"] in stages]
     current = {f["fingerprint"] for f in findings}
-    new = [f for f in findings if baseline is None or f["fingerprint"] not in baseline]
+    baselined_stages = {cat for cat in baseline.values() if cat in stages}
+    new = [f for f in findings if f["fingerprint"] not in baseline]
     return {
+        "findings": findings,
         "new": new,
-        "blocking": [f for f in new if baseline is not None and is_blocking(f, policy)],
-        "resolved": len(baseline - current) if baseline else 0,
+        "blocking": [f for f in new if f["category"] in baselined_stages and is_blocking(f, policy)],
+        "bootstrap": stages - baselined_stages,
+        "resolved": sum(1 for fp, cat in baseline.items() if cat in stages and fp not in current),
     }
 
 
-def render_summary(findings: list[dict], result: dict, policy: dict, bootstrap: bool) -> str:
-    total = Counter(f["category"] for f in findings)
+def render_summary(result: dict, policy: dict, stages: set[str]) -> str:
+    total = Counter(f["category"] for f in result["findings"])
     new = Counter(f["category"] for f in result["new"])
     blocking = Counter(f["category"] for f in result["blocking"])
     out = ["## Security gate", ""]
-    if bootstrap:
-        out += ["> **Bootstrap mode:** no baseline committed yet, so nothing blocks. "
-                "Commit the generated baseline to arm the gate.", ""]
+    if result["bootstrap"]:
+        out += [f"> **Bootstrap:** no baseline yet for {', '.join(sorted(result['bootstrap']))}, "
+                "so those stages report but do not block. Commit the baseline candidate to arm them.", ""]
     out += ["| Stage | Total | New | Blocking | Fails on new ≥ |", "|---|---:|---:|---:|---|"]
-    for cat in sorted(set(total) | set(policy)):
+    for cat in sorted(stages):
         rule = policy.get(cat, {})
         threshold = rule.get("fail_on", "—") + (" (fix available)" if rule.get("require_fix") else "")
+        if cat in result["bootstrap"]:
+            threshold = "bootstrap (report only)"
         out.append(f"| {cat} | {total[cat]} | {new[cat]} | {blocking[cat]} | {threshold} |")
     out += ["", f"Resolved since baseline: **{result['resolved']}**", ""]
     if result["blocking"]:
@@ -88,22 +111,23 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--findings", type=Path, required=True)
     p.add_argument("--baseline", type=Path, required=True)
     p.add_argument("--policy", type=Path, required=True)
+    p.add_argument("--stages", help="comma-separated stages to evaluate (default: all in policy)")
     p.add_argument("--summary", type=Path, help="append Markdown here (e.g. $GITHUB_STEP_SUMMARY)")
-    p.add_argument("--write-baseline", type=Path, help="write current findings as a new baseline")
+    p.add_argument("--write-baseline", type=Path, help="write the evaluated findings as a new baseline")
     args = p.parse_args(argv)
 
     findings = json.loads(args.findings.read_text())
     policy = tomllib.loads(args.policy.read_text())
-    baseline = load_baseline(args.baseline)
-    result = evaluate(findings, baseline, policy)
-    summary = render_summary(findings, result, policy, bootstrap=baseline is None)
+    stages = set(args.stages.split(",")) if args.stages else set(policy)
+    result = evaluate(findings, load_baseline(args.baseline), policy, stages)
+    summary = render_summary(result, policy, stages)
 
     print(summary)
     if args.summary:
         with args.summary.open("a") as fh:
             fh.write(summary)
     if args.write_baseline:
-        write_baseline(findings, args.write_baseline)
+        write_baseline(result["findings"], args.write_baseline)
 
     return 1 if result["blocking"] else 0
 

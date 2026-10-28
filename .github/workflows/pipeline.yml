@@ -16,9 +16,12 @@ concurrency:
 env:
   NODE_VERSION: 24
   SEMGREP_VERSION: 1.182.1
+  CHECKOV_VERSION: 3.3.30
   GITLEAKS_VERSION: 8.30.1
   TRIVY_VERSION: 0.76.1
+  SYFT_VERSION: 1.55.0
   KIND_VERSION: v0.33.0
+  ZAP_IMAGE: ghcr.io/zaproxy/zaproxy:2.17.0@sha256:030d3df57735dacbb83464854758e674dd9ad01d79d12a129a8e58b1fd384238
 
 jobs:
   build-test:
@@ -39,6 +42,8 @@ jobs:
       - name: Server unit tests
         run: npm run test:server
 
+  # ---------------------------------------------------------------- pre-build
+
   sast:
     name: SAST (Semgrep)
     runs-on: ubuntu-24.04
@@ -56,7 +61,7 @@ jobs:
             --json --output reports/semgrep.json .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: semgrep
+          name: scan-semgrep
           path: reports/semgrep.json
 
   secrets:
@@ -85,7 +90,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: gitleaks
+          name: scan-gitleaks
           path: reports/gitleaks.json
 
   sca:
@@ -111,18 +116,42 @@ jobs:
           trivy fs --scanners vuln --exit-code 0 --format json --output reports/trivy-fs.json .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: trivy-fs
+          name: scan-trivy-fs
           path: reports/trivy-fs.json
 
+  iac:
+    name: IaC (Checkov)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Checkov
+        run: pipx install "checkov==${CHECKOV_VERSION}"
+      # Built-in CIS-aligned checks plus our own policies in policies/checkov.
+      # data/static/codefixes holds challenge answer files, not deployed IaC.
+      - name: Scan Kubernetes, Dockerfiles, Terraform and workflows
+        run: |
+          mkdir -p reports
+          checkov -d . --framework kubernetes dockerfile terraform github_actions \
+            --external-checks-dir policies/checkov \
+            --skip-path data/static/codefixes --skip-path reports \
+            --soft-fail --quiet -o json --output-file-path reports > /dev/null
+          mv reports/results_json.json reports/checkov.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scan-checkov
+          path: reports/checkov.json
+
   security-gate:
-    name: Security gate
-    needs: [sast, secrets, sca]
+    name: Security gate (pre-build)
+    needs: [sast, secrets, sca, iac]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          pattern: scan-*
           path: reports
           merge-multiple: true
       - name: Test the gate itself
@@ -133,25 +162,20 @@ jobs:
             --semgrep reports/semgrep.json \
             --gitleaks reports/gitleaks.json \
             --trivy-fs reports/trivy-fs.json \
-            -o reports/findings.json
+            --checkov reports/checkov.json \
+            -o reports/prebuild-findings.json
       - name: Evaluate gate
         run: |
-          python3 -m fortress.gate \
-            --findings reports/findings.json \
+          python3 -m fortress.gate --stages sast,secrets,sca,iac \
+            --findings reports/prebuild-findings.json \
             --baseline security/baselines/baseline.json \
             --policy security/gate-policy.toml \
-            --summary "$GITHUB_STEP_SUMMARY" \
-            --write-baseline reports/baseline-candidate.json
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
-        with:
-          name: consolidated-findings
-          path: |
-            reports/findings.json
-            reports/baseline-candidate.json
+            --summary "$GITHUB_STEP_SUMMARY"
 
-  deploy:
-    name: Deploy to kind (staging)
+  # --------------------------------------------------------------- post-build
+
+  image:
+    name: Image scan & SBOM
     needs: [build-test, security-gate]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -159,6 +183,59 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build image
         run: docker build --build-arg VCS_REF="${GITHUB_SHA}" -t juice-shop:ci .
+      - name: Install Trivy and Syft
+        run: |
+          security/install-tools.sh trivy
+          security/install-tools.sh syft
+      - name: Scan image
+        run: |
+          mkdir -p reports
+          trivy image --scanners vuln --exit-code 0 --format json --output reports/trivy-image.json juice-shop:ci
+      - name: Generate SBOM
+        run: |
+          syft scan docker:juice-shop:ci \
+            -o cyclonedx-json=reports/sbom.cdx.json \
+            -o spdx-json=reports/sbom.spdx.json
+      - name: Container gate
+        run: |
+          python3 -m fortress.normalize --trivy-image reports/trivy-image.json -o reports/container-findings.json
+          python3 -m fortress.gate --stages container \
+            --findings reports/container-findings.json \
+            --baseline security/baselines/baseline.json \
+            --policy security/gate-policy.toml \
+            --summary "$GITHUB_STEP_SUMMARY"
+      - name: Save image for the deploy job
+        run: docker save juice-shop:ci | gzip -1 > juice-shop-image.tar.gz
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: scan-trivy-image
+          path: reports/trivy-image.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: |
+            reports/sbom.cdx.json
+            reports/sbom.spdx.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: image-tarball
+          path: juice-shop-image.tar.gz
+          retention-days: 1
+          compression-level: 0
+
+  deploy-dast:
+    name: Deploy to kind & DAST (ZAP)
+    needs: image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: image-tarball
+      - name: Load image
+        run: docker load --input juice-shop-image.tar.gz
       - name: Install kind
         run: security/install-tools.sh kind
       - name: Create cluster
@@ -176,8 +253,102 @@ jobs:
             sleep 2
           done
           exit 1
+      # Passive baseline scan of the throwaway staging deployment only. The
+      # target is the port-forward inside this runner; nothing leaves the lab.
+      - name: DAST (ZAP baseline)
+        run: |
+          mkdir -p reports && chmod 777 reports
+          docker run --rm --network host -v "$PWD/reports:/zap/wrk:rw" "$ZAP_IMAGE" \
+            zap-baseline.py -t http://127.0.0.1:3000 -J zap.json -r zap.html -I || rc=$?
+          echo "zap-baseline exit code: ${rc:-0}"
+          test -s reports/zap.json
+      - name: DAST gate
+        run: |
+          python3 -m fortress.normalize --zap reports/zap.json -o reports/dast-findings.json
+          python3 -m fortress.gate --stages dast \
+            --findings reports/dast-findings.json \
+            --baseline security/baselines/baseline.json \
+            --policy security/gate-policy.toml \
+            --summary "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: scan-zap
+          path: |
+            reports/zap.json
+            reports/zap.html
       - name: Diagnostics
         if: failure()
         run: |
+          kubectl -n juice-shop get events --sort-by=.lastTimestamp | tail -30
           kubectl -n juice-shop describe pods
-          kubectl -n juice-shop logs deployment/juice-shop --tail=100
+          kubectl -n juice-shop logs deployment/juice-shop --all-containers --tail=100
+
+  # ------------------------------------------------------------------ report
+
+  consolidate:
+    name: Consolidate findings & dashboard
+    needs: [security-gate, image, deploy-dast]
+    if: always() && needs.security-gate.result != 'skipped'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read  # job timings for the feedback-time metric
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: scan-*
+          path: reports
+          merge-multiple: true
+      - name: Consolidate every stage that produced a report
+        run: |
+          args=()
+          for pair in semgrep:semgrep gitleaks:gitleaks trivy-fs:trivy-fs checkov:checkov trivy-image:trivy-image zap:zap; do
+            file="reports/${pair#*:}.json"
+            if [ -s "$file" ]; then args+=("--${pair%%:*}" "$file"); fi
+          done
+          python3 -m fortress.normalize "${args[@]}" -o reports/findings.json
+      # Blocking already happened in the per-stage gates above; this run only
+      # produces the all-stage summary and the baseline candidate.
+      - name: All-stage summary and baseline candidate
+        run: |
+          python3 -m fortress.gate \
+            --findings reports/findings.json \
+            --baseline security/baselines/baseline.json \
+            --policy security/gate-policy.toml \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --write-baseline reports/baseline-candidate.json || true
+      - name: Fetch job timings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" > reports/run.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs" > reports/jobs.json
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true  # absent when the image job failed
+        with:
+          name: sbom
+          path: reports
+      - name: Render dashboard
+        run: |
+          python3 -m fortress.dashboard \
+            --findings reports/findings.json \
+            --baseline security/baselines/baseline.json \
+            --policy security/gate-policy.toml \
+            --run reports/run.json --jobs reports/jobs.json \
+            --seeded metrics/seeded-results.json \
+            --sbom reports/sbom.cdx.json \
+            -o reports/dashboard.html
+          echo "Metrics dashboard: download the **metrics-dashboard** artifact and open dashboard.html." >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consolidated-findings
+          path: |
+            reports/findings.json
+            reports/baseline-candidate.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: metrics-dashboard
+          path: reports/dashboard.html

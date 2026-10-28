@@ -1,0 +1,16 @@
+{
+  "@programName": "ZAP",
+  "site": [
+    {
+      "@name": "http://127.0.0.1:3000",
+      "alerts": [
+        {"pluginid": "10038", "alertRef": "10038-1", "alert": "Content Security Policy (CSP) Header Not Set",
+         "riskcode": "2", "confidence": "3", "cweid": "693",
+         "instances": [{"uri": "http://127.0.0.1:3000/", "method": "GET",
+                        "evidence": "Set-Cookie: token=SECRETSESSION123"}]},
+        {"pluginid": "10049", "alertRef": "10049", "alert": "Storable and Cacheable Content",
+         "riskcode": "0", "confidence": "2", "cweid": "-1", "instances": []}
+      ]
+    }
+  ]
+}
