@@ -1,0 +1,1056 @@
+{
+  "generated": "2026-10-28T07:31:18+00:00",
+  "note": "Accepted pre-existing findings. Regenerate only with a reviewed justification.",
+  "fingerprints": {
+    "00a189e6f31a83deacf6ee8bfe2efb457eba4ffa4b69c64698b780274570e392": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/product-review.test.ts"
+    },
+    "01f50c0157286855a1c131a21bf92d0d4a1cb617b36319f5238b449e63687723": {
+      "tool": "trivy",
+      "rule_id": "GHSA-5mrr-rgp6-x4gr",
+      "file": "package-lock.json"
+    },
+    "0230a35bedd28e6061536071712afe1e954042b49f37dad270b2d5d7f4805031": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/cypress/e2e/forgedJwt.spec.ts"
+    },
+    "024e3d4235dfa9f1450146ac42c72a43e023dd80bcfecc5e6d5e06592f456618": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "data/static/users.yml"
+    },
+    "05e27d8155f0f82bd7ddd937b2078feaee6002b15cc4588a91f60eb01e7267b7": {
+      "tool": "trivy",
+      "rule_id": "NSWG-ECO-17",
+      "file": "package-lock.json"
+    },
+    "0aacac34ab55ff210ad3329e1216c087425833bab115f90fcc3bf48ad9b431c3": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "frontend/src/app/last-login-ip/last-login-ip.component.spec.ts"
+    },
+    "0be8a5f3a5a0d3d0c1929ef82f6819ab6a71376a956c3727ad3d627d4ed64ea4": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-open-redirect.express-open-redirect",
+      "file": "routes/redirect.ts"
+    },
+    "0de65217e0cf99089a94dcc0120475b772edf5e8ea4efc20603f648baa41d80a": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-25887",
+      "file": "package-lock.json"
+    },
+    "0e9f13aa99f02ab6135fe43dc7fddc461c5cc408ee94b6c696f1b578601ed397": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-23541",
+      "file": "package-lock.json"
+    },
+    "0f98530a298c98ea23d0beb7aa0522bbde82ac17a80e6aeb2fe4562b0934dbca": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/erasure-request.test.ts"
+    },
+    "1292a4bcb4d1b37cede200b3ed00ca6be14e63680bf8c8685d0f1b51e36877c5": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-2950",
+      "file": "package-lock.json"
+    },
+    "13f9f16e6d17ef9595ffd7cbfc333e23add286423bee8d9f8ef012045377bb8c": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/erasure-request.test.ts"
+    },
+    "15e8852fe34a588d05ddc1c64d1a8568f2ea573edcf1dc4c41ebcb42f7f43002": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/login.test.ts"
+    },
+    "17e078a6359e1554433a326006013eb51c53ae455e36d7d3c8c602845272545d": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-112944",
+      "file": "frontend/package-lock.json"
+    },
+    "1880dc25faf5d4c2e9615ac4906096f1d31cadd622ab3a079188faeb644efbd5": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-26996",
+      "file": "package-lock.json"
+    },
+    "1a52d3075a8c647e369b22172aa71efbcb25d0eefdbc9acf95c35257f37e60e6": {
+      "tool": "trivy",
+      "rule_id": "CVE-2021-26539",
+      "file": "package-lock.json"
+    },
+    "1abb828783f02a84a5cdbc5e8f31de07fa8574bf481f7c6123c4ed5cb11cfe9e": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "frontend/src/app/oauth/oauth.component.spec.ts"
+    },
+    "1b9cb698b7b7b4b93ab6143015c64a6773ac18717dd0d3c039e4fa5ef221f032": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/erasure-request.test.ts"
+    },
+    "1bb72365ece88bdc4053c8062923d0d528356407f4ddafe0f4d3d0909b09e760": {
+      "tool": "trivy",
+      "rule_id": "CVE-2016-1000223",
+      "file": "package-lock.json"
+    },
+    "1bcb01383ecc8ba0595c2197d21c0d77accb57a11dfdf61da66504944b9daf56": {
+      "tool": "trivy",
+      "rule_id": "CVE-2025-14505",
+      "file": "frontend/package-lock.json"
+    },
+    "21331829cf89afe427564138b37990d576b90375089b04bd92182db59dd33125": {
+      "tool": "trivy",
+      "rule_id": "CVE-2015-9235",
+      "file": "package-lock.json"
+    },
+    "218cc5a5a5cae1a63daa36a74e1325c6acae6b77806eabe9823789c57d264a19": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.generic.error_disclosure.generic_error_disclosure",
+      "file": "rsn/rsnUtil.ts"
+    },
+    "21e984e51ad25dacc3d2cc3f6026526c812c8fe55f5fedab182db95c80339b19": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-53486",
+      "file": "package-lock.json"
+    },
+    "23c85891dc26d56c7699713793e820c2e094997e950bd18a8fbb3c9bff1d1be4": {
+      "tool": "trivy",
+      "rule_id": "CVE-2018-3721",
+      "file": "package-lock.json"
+    },
+    "262e5ed2621ff015a93ff471f6e95b6106d15af40ba0211e86cb13016a407224": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.generic.hardcoded_secrets.node_username",
+      "file": "data/datacreator.ts"
+    },
+    "27a0066365a0c4d569bcfdb8289225880ba498b3c970ccb41487b2d7fc50222f": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-23950",
+      "file": "package-lock.json"
+    },
+    "28f1485792200d0675f4d8d50058ae1cc258b1ee64ed0b02dddfc4aa30349662": {
+      "tool": "trivy",
+      "rule_id": "CVE-2016-1000237",
+      "file": "package-lock.json"
+    },
+    "2d941dd97e61023c0f75b80b8ebbb15dc87e9f1cd58616e5eda06689536614ae": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts"
+    },
+    "2e74bc1fe71469bfa8d2b94bb95388baa005105ba49f244c45640404dca91363": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "data/datacreator.ts"
+    },
+    "2ebcbc365157d1f550068f3168a31bd7b73dbbb5fa331e089fbcefa737059b6b": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/likeProductReviews.ts"
+    },
+    "31ae71b2455b96a4c518baaffb6e430c47c8f4e80c94da31f723dffb0379fba9": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.generic.logic_bypass.node_logic_bypass",
+      "file": "routes/verify.ts"
+    },
+    "31d263f59a4d014554d29349fe235ec0a0f37caf215537a6b7e4906546d49c32": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/checkKeys.test.ts"
+    },
+    "331567b7d7ac5cfdb062b9c0f4d685c08f1521dada9c7384c5d511dae797d323": {
+      "tool": "trivy",
+      "rule_id": "CVE-2024-21501",
+      "file": "package-lock.json"
+    },
+    "336cbebf7b610289256c19b9b3cf2f620fb97a699ed5ba32a7cafc2d3cb720ec": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "33cdb14c452412cf1fd4a94551e307f12e652fdacf73b9d285174f888838c6aa": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/product-review.test.ts"
+    },
+    "36afe4f7f222337982530d343a45d42cefed19c1e90491f5205bd2cb335d0a98": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "382303a125607342c11d7fdf345102e8ebaabd178bdb10179c169d20354f50dc": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "data/static/users.yml"
+    },
+    "3a5b4d4c5972b9c752001e2a2cd7bbfc6520b796a84dc619e075295712f0f392": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/server/verify.unit.test.ts"
+    },
+    "3a735346e33e6d410d1171a6e0206ccab6d9f941e894d9532ce3011ff0dbc256": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/deluxe.ts"
+    },
+    "3b0722343a87ebfb2657bca705b6090856f42475d5ecdd7d675e65f75d240803": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/data-export.test.ts"
+    },
+    "3baddcd9b991875c42fdb9c7d2467f2dbd6e9a5fc9b173ed4fcc7ee08fd4fe6e": {
+      "tool": "trivy",
+      "rule_id": "CVE-2025-65945",
+      "file": "package-lock.json"
+    },
+    "3ceb41e9bde25699e6c63dc87f2e3337dc5e72af0d1e4ed29e27305ad49b5350": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "3e236c6749170df6898a704a579c3fd5ba61701fc02f987416c99e8cee55b7a2": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/user.test.ts"
+    },
+    "3ff8bdb57c5177abca19e8b0e9fc0cef7995704299f1c13254accfc280146ba6": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-73566",
+      "file": "package-lock.json"
+    },
+    "4117a51a458540c77f1480526f874276350b31a9ab79cc416a5d071e1cda8eb8": {
+      "tool": "trivy",
+      "rule_id": "CVE-2015-9235",
+      "file": "package-lock.json"
+    },
+    "418a67a067a3abea4c55429eaf01c02002e691cde4346bd0c087b8853e13b364": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-27903",
+      "file": "package-lock.json"
+    },
+    "41a874a2e86b7866061b2011f309cd5cde5d5125d2210b0f83ac3a457c4e6957": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-71851",
+      "file": "package-lock.json"
+    },
+    "423cca604325f5167d204dbd37f5500dfd826df499ce8538a381ee563f76a52f": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/basket.ts"
+    },
+    "424186a26a94399cdfcd5d9dd6f22656acc50aa8b6d56ce7137e34ac825b5273": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/cypress/e2e/forgedJwt.spec.ts"
+    },
+    "42c0d206b78cb313ce1b3273bb92efa22bbd3125b9a37955e78860c0b6c62736": {
+      "tool": "semgrep",
+      "rule_id": "javascript.sequelize.security.audit.sequelize-injection-express.express-sequelize-injection",
+      "file": "routes/login.ts"
+    },
+    "42d4cd5175da4974f9f1391f71379fc3dcf686f91e89d3d46c445c8db45a8290": {
+      "tool": "semgrep",
+      "rule_id": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
+      "file": "lib/insecurity.ts"
+    },
+    "43e14bfb5f28f8ad585dcccb1ea1e7c12f332175758587c3c3e786bcf80a2f4d": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/captcha.ts"
+    },
+    "4adbfe749fbd5ca3564aaf7a744d48d8ca2907b799b186a3eafb260b24267b02": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/server/verify.unit.test.ts"
+    },
+    "4b0985833793a1db1c7694e02ccf92bf0a3a423977833f42410016999fa96fc1": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "routes/login.ts"
+    },
+    "4ba6c1e6dcb52049e37e33a0062d29229e433461d50da40cd9b20b5a48bb4675": {
+      "tool": "trivy",
+      "rule_id": "CVE-2020-15084",
+      "file": "package-lock.json"
+    },
+    "4d206b22e6bf844c0d0665c750c6a9d695d511e97641c05a732f9eee92a0e033": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-25881",
+      "file": "package-lock.json"
+    },
+    "4d435eb26b750649bfd203a6f888430e72748ba65b9f906bf5bcc565d8432681": {
+      "tool": "trivy",
+      "rule_id": "GHSA-rvg8-pwq2-xj7q",
+      "file": "package-lock.json"
+    },
+    "508cfa7746d4919047a1c99769126d57d226fa83d5df2a46c1593a2e360bfa5a": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/server/currentUser.unit.test.ts"
+    },
+    "511828df1d35415381957f4dbe010323b62cab609f9fff45be3e4cf063d1e3a3": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-102990",
+      "file": "package-lock.json"
+    },
+    "511a1f6cd1f6f36d2dd84df74db4d3a8085efe143bf8530b6897e1e03c3e6e6b": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/feedback.test.ts"
+    },
+    "516fa2591a167470c6d0a2670e1ed044a1a474e92a184b74e450765fae1e5360": {
+      "tool": "gitleaks",
+      "rule_id": "private-key",
+      "file": "infrastructure/terraform/networking.tf"
+    },
+    "51b17b39a017ca7c81320d404a6c0e5d2816297f334277007efb0b15673a7afb": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-check-directory-listing.express-check-directory-listing",
+      "file": "server.ts"
+    },
+    "52052c94b56c338d6dcc8b3dc5183dc63ccd9847305297c729f32306639f3eb5": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "data/datacreator.ts"
+    },
+    "5346052d0d6313d6a8f4d0ce65917db91dab6fd6f41dde2aac6aedd5b7b1fb21": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "frontend/src/app/oauth/oauth.component.spec.ts"
+    },
+    "550b166b035c71ace368d4c551cc5081e8740077ba4629c6a0f2c566a97aedfc": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/server/currentUser.unit.test.ts"
+    },
+    "56e839a27b522a587774409526a0ed1b8f4de6a3a3d0a12405c577544d20fd24": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/cypress/e2e/forgedJwt.spec.ts"
+    },
+    "574f17b157507800a9997d8cb01ac3f7246754023c1de3f7a5bb40a817d133b3": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-res-sendfile.express-res-sendfile",
+      "file": "routes/fileServer.ts"
+    },
+    "576fa1b4f7bdfa2a6f43f90a31bc4280f8c6528d311a7d5e2ce374af25f89318": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/wallet.ts"
+    },
+    "58ea0dcc73dcb96dcd4551e6147e15f834a8681e7354318b2ca6f33f87a21404": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.generic.hardcoded_secrets.node_username",
+      "file": "data/datacreator.ts"
+    },
+    "5922b898528ec7f0460c17c34de8d5912a719541526807fd1a616dcdb25feb10": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-check-directory-listing.express-check-directory-listing",
+      "file": "server.ts"
+    },
+    "5adc1775ad560455f8e8c9ce089dd167e8415932b0ac4cd43488650adf0d8e45": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "frontend/src/app/faucet/faucet.component.ts"
+    },
+    "5b0fe547c309a14cc4d414410c299adb4e21267c0d44819a928f4fca47ef61e2": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/payment.ts"
+    },
+    "5f06162f86c9b018927ec662a761d775db093ea06b950558380bf75916b6a60a": {
+      "tool": "trivy",
+      "rule_id": "CVE-2018-16487",
+      "file": "package-lock.json"
+    },
+    "5fe3bcec56e0d72dd78ddd9ea530b3473e2416e106f43ec1bfad7776157d811d": {
+      "tool": "trivy",
+      "rule_id": "CVE-2021-26540",
+      "file": "package-lock.json"
+    },
+    "60c32c33bb4bfdcbaf5c2fd551a4695eee064e9a4f1376847210174fb7dbb1c1": {
+      "tool": "semgrep",
+      "rule_id": "security.semgrep.pf-sequelize-raw-query-interpolation",
+      "file": "routes/search.ts"
+    },
+    "615bb9e05cdd2d3c5c9c68c0fcb4ce77da95718a72cb1319559baf6b30da5025": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/checkKeys.test.ts"
+    },
+    "64cc53079a0ce103e6b394255f463c06381fedaef5e5be299dc38af6eb2d2d34": {
+      "tool": "trivy",
+      "rule_id": "CVE-2019-10744",
+      "file": "package-lock.json"
+    },
+    "65466d9856b49d5d5f152eb94a61ee52d1db8b738e8ed34689caa7a5b3caeead": {
+      "tool": "trivy",
+      "rule_id": "CVE-2021-23337",
+      "file": "package-lock.json"
+    },
+    "6656f95d4459dc39fa759437e94a4d375928c00b0ff6d46791d8b5fedf01d344": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-23539",
+      "file": "package-lock.json"
+    },
+    "66a186513651aec8af5cab07eaf601c22ae4a11f4d1d421be32c0c28f075b078": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/deluxe.ts"
+    },
+    "6733ad27a68f7fc59dd1b77df84838e9b3aac9757c2439da0ce88453fb7e5ea8": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "data/datacreator.ts"
+    },
+    "679e54812a51f2d9918611bcc08590ec2172b022ffdfc51a8ba65295021261fd": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.good.good_helmet_checks.helmet_header_feature_policy",
+      "file": "server.ts"
+    },
+    "67db17d1108f357fccc6c2f851c5084f12cc9f0edc758aba727000b83b395462": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/order.ts"
+    },
+    "67fb8abed8d399b8ba9d4f7b39b659703e2cee4a53d7c5e9e498afd70436ff6c": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "686590762240316ea53e93e05064d497ce24834f0163b39c8b6358568cf5e4d8": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "routes/captcha.ts"
+    },
+    "687d7b239b876d9155a3cab8d93c3134310403c203b53f922d5467ab631791e1": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "frontend/src/app/app.guard.spec.ts"
+    },
+    "68beb9c7857fc07880414f024a20af53e8671e82ff3e75c3b88efdf4aa4000f6": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-3449",
+      "file": "package-lock.json"
+    },
+    "6a93e9f8d9266208e8a09b7086539ed504531356fc4d05279e38ff2912d032e2": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.generic.hardcoded_secrets.node_username",
+      "file": "frontend/src/app/login/login.component.ts"
+    },
+    "6ab7c4d9067d8319255bdac86011f75600090118ea3deaf23ac0f90eefe32003": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_injection.node_nosqli_js_injection",
+      "file": "routes/trackOrder.ts"
+    },
+    "6afffcf8de58ec591ab667451fb6bcd259a0861167f8b531f06f9e8ac6d2a0d6": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "6f2b820733ea981be5ae69422567e5f157cf96331fc653a2239541afa5f2020e": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/cypress/e2e/totpSetup.spec.ts"
+    },
+    "724868e431a2bfc014b055c90a6a81421d8ed39ecc6aadb776f0bcec499598c1": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-24842",
+      "file": "package-lock.json"
+    },
+    "72673d4295642bbc2b529787885eda319dedd471be75d9f0224b4444c6cee6ec": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-53655",
+      "file": "package-lock.json"
+    },
+    "73d11b90281d4653d4a8a6fe7023aaa4b4999526cba1ecf8475709c9c7347c8a": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "7416279659191d506428000c1e83861afc60cf2464496198b76982a7f553fde7": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-31808",
+      "file": "package-lock.json"
+    },
+    "743e5a64e13cbd2bb60d6c99719d3eef3d58f5956b9c6a0d23fac37c984dc37f": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/address.ts"
+    },
+    "7490dcd917590ddb7b40ab5ab7a70f65fe62319ab130fbf073f206ee85a3e5fc": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-101894",
+      "file": "package-lock.json"
+    },
+    "75c33bf9bd7098ee5672a94802a9d4a52687ed6b4e3e2ce25dee06f4edce79eb": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.good.good_helmet_checks.helmet_header_frame_guard",
+      "file": "server.ts"
+    },
+    "75d05aa110ea0e51e6e59e99f131c834833e445446e6dff02f7f843d55557569": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "77c69fd91523a50c0a10cf3654745bf8ef2e2fd3e660fcdad01a4a1c30fa49c0": {
+      "tool": "trivy",
+      "rule_id": "NSWG-ECO-17",
+      "file": "package-lock.json"
+    },
+    "78cb77d222522845b3bc012e02d38a549a061e865a56344c568f4ae5c48e0115": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-23539",
+      "file": "package-lock.json"
+    },
+    "7974a1d9911d114fbc0a94b0d0b29c5ec1cabed882bc2b84eef64b5bd868e4ba": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.good.good_helmet_checks.helmet_header_nosniff",
+      "file": "server.ts"
+    },
+    "79f54976057c8876dd4ddd5d9ee30b2a203f485cf50cde07ca7e59a823826835": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/chat.test.ts"
+    },
+    "7aedfc3b4cddb5064479ffd1d7e83c40817a233a0f16423e0726418d7f4fe48e": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "frontend/src/app/last-login-ip/last-login-ip.component.spec.ts"
+    },
+    "7badb76940ac3beb5b0aeb93ec6ee6e7a98f3443ed8849b5f4a79a8520003ac0": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-59873",
+      "file": "package-lock.json"
+    },
+    "7d34cd7e2400bdbd3ca25ed65fdec13b76d2751bde5fcbe99a30f68f1b165f65": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/wallet.ts"
+    },
+    "7d971be53321c68f62371e1f1efe9de4ad6f3f0139ba34b76b3173b26bc0f7ff": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-10732",
+      "file": "package-lock.json"
+    },
+    "7eb66868be3b158dc436c88ed6d4426f272d278774347caa3434f92d6244086d": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/user.test.ts"
+    },
+    "7f0ba1fe581f2d97c75b9180aaaed1216bed54f2c7543ec3ccc2699a1c1130e8": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/basketItems.ts"
+    },
+    "7f612de71deae0428613406a3bcd5295efeaa46fc4af39a96a4efbf90d58385b": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-check-directory-listing.express-check-directory-listing",
+      "file": "server.ts"
+    },
+    "812715ffe3c4e2f18081f408b9697e28239d622060548b372b1dfc87c5cf1dc6": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/order.ts"
+    },
+    "81cfbd6b87299ea77d6c5a9723ef84e034986b819cdf8c6c29fde1f7d26a714f": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-41907",
+      "file": "package-lock.json"
+    },
+    "854fbaa6abf9e9071f9f44a5bb28f32bb8706e255592a6d2a653aa0385d33780": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-31802",
+      "file": "package-lock.json"
+    },
+    "8668f1bd12e39f46e037d1e99afbb35f19e1ec32a5df24e838bcb9ba0480ad97": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-112943",
+      "file": "frontend/package-lock.json"
+    },
+    "8735074efdb2e2fc0d833bafde1f074da72ff3c668f2330824d1452b9859718e": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-112945",
+      "file": "frontend/package-lock.json"
+    },
+    "8a09a613a07074589731ba0110f76770f291beec7c63afc34f5db1560d030f7e": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/delivery.ts"
+    },
+    "8a503e97e33555d8e32a6542cfac7251d793013d1dafe0ea74b5dafb7866e8bf": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-29786",
+      "file": "package-lock.json"
+    },
+    "8a57e2b0637fb774c2478735dec4986c1dcdf29c12b23b71d6de1b99b1940ddc": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "8b4e220071af26cf374edfed3f1a48b91695beab41edf7845dc04d634cd4e6f7": {
+      "tool": "gitleaks",
+      "rule_id": "private-key",
+      "file": "terraform/networking.tf"
+    },
+    "8cf2103796c28ab65da3f2b2ce465f7b2b59df7d38a598e6833ff6f67b21c4ff": {
+      "tool": "trivy",
+      "rule_id": "NSWG-ECO-154",
+      "file": "package-lock.json"
+    },
+    "8e17d4b290192d2f5b22bcf0cf41f67089eed4b30166401c8eded433684546de": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/user.test.ts"
+    },
+    "921b1f0eac8a6a6ca5138dd692853c8e1189d9c7f5e4d81ec1ea2deec5d82d7e": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-24785",
+      "file": "package-lock.json"
+    },
+    "937e728ef7da35c318262c8c1776b1570169553b1a8781021abf8f5979c86447": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/data-export.test.ts"
+    },
+    "9440c6565db6f7449fbe30cc816c0251aa08e2987de891cb68bd47e451d7b184": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-59871",
+      "file": "package-lock.json"
+    },
+    "9539e79411ddcb0d0f35f97c76ca69f9b0ae4c85de00dd9bfb24323bea1c9c00": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-112946",
+      "file": "frontend/package-lock.json"
+    },
+    "98677e20d99e58913a22fdab337a12d5191efa76e756f683464a6a99df5ac4b4": {
+      "tool": "semgrep",
+      "rule_id": "javascript.lang.security.audit.code-string-concat.code-string-concat",
+      "file": "routes/userProfile.ts"
+    },
+    "99c43c30074383d2005457f1c3390b66f10ad3753f294712bbd707fc7e24fbe8": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/api/user.test.ts"
+    },
+    "9a07b986ae31db403fae973791f8333bcf346d334249603a1fbed85128d47e71": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-check-directory-listing.express-check-directory-listing",
+      "file": "server.ts"
+    },
+    "9a8592091c62c16f244b5f419330b96dabe863375bd069d058cf2613da31e2c8": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-112942",
+      "file": "frontend/package-lock.json"
+    },
+    "9a93e7be560aefec93ac7c22744762775b35a5ba466c627815e9aa2441cad924": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/basket.test.ts"
+    },
+    "9b2c9eff9a38f1c4f8f2ac6b089272c3550b3e7a71dd189de2bd2cd6275e5bcb": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_md5",
+      "file": "lib/insecurity.ts"
+    },
+    "9d9bd4cf922ea1b6acac32e3e51e474ed9e0e8f4a5ef5ae329e0abcfa7f8b58c": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/basket.test.ts"
+    },
+    "a043f335e0d1bb44447a31241aa82f7dc62db47e59cc60abe404de3d393c5af6": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/login.test.ts"
+    },
+    "a1105bd9d575e4d14f8117fc89f2ce6b2e6ebaf7b36a6749610c613e955aed66": {
+      "tool": "semgrep",
+      "rule_id": "javascript.sequelize.security.audit.sequelize-injection-express.express-sequelize-injection",
+      "file": "routes/search.ts"
+    },
+    "a292792c5aa007fbbf0ae0ddf7aea054baedce92943917a761442560db55b3a2": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-23541",
+      "file": "package-lock.json"
+    },
+    "a338f445eeee6a3fc3524028560b649cc4fab31b49706c7a32509f2b091b10b3": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/feedback.test.ts"
+    },
+    "a3c626e5e6cbc75ed4e2cda91242e3338098b465938c4232f12eb4a15d2167cb": {
+      "tool": "trivy",
+      "rule_id": "CVE-2021-23771",
+      "file": "package-lock.json"
+    },
+    "a57d8d145cc136ce344dde8c6467e7658c0dbca32160a5fb2caa7a0ce46d3eaf": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.xss.xss_node.express_xss",
+      "file": "routes/userProfile.ts"
+    },
+    "a63d1a58a71a2e1e69566f9e270c09ede7c44ca1e8c5951189c134d5a66e023e": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/deluxe.ts"
+    },
+    "a6642146713da43499c8413db5cb2dc0a57b1326cae46b7bfd36481e94626653": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "data/datacreator.ts"
+    },
+    "a89d17b5f76f7391e40cfd81d224bd50937b89a327bb2a63216c619ad432c870": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "frontend/src/app/oauth/oauth.component.spec.ts"
+    },
+    "a8bcd6e13b07a442010b15a5d87d9785bb43d46cd6e2f5f7260ba1e814c07bd5": {
+      "tool": "gitleaks",
+      "rule_id": "private-key",
+      "file": "lib/insecurity.ts"
+    },
+    "aa38f2e97299b88f8585317ddb2ee331ecaca8e7ac27ab574a900f262c997abe": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/likeProductReviews.ts"
+    },
+    "af9474ca6e9ec4321824ee7e96b3005b3c93b1291e0c4d2c5d55e58a8e0fcdcd": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "routes/captcha.ts"
+    },
+    "afe619e831b6f5f4fbcdc52f938804419b526663d91218278906cc5a1ba779e0": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-27904",
+      "file": "package-lock.json"
+    },
+    "b01721663da2e49e4099b3784bad7d37077589b55d6c7f1d4730e3e884c3ad53": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/order.ts"
+    },
+    "b24ad7d35e075ff451e52eb35054a95ae1a3212582c34c5914477dc813f3fa41": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/erasure-request.test.ts"
+    },
+    "b2a80f2ee2bde9fa5db17a7ce385ca21d82d41b0d448fc6889bab2fd87a04d6e": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-59875",
+      "file": "package-lock.json"
+    },
+    "b329fa9d1499f72d8b53d0b4973cc4c59600861a04a3e582edf810ba46b2c57f": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-113661",
+      "file": "package-lock.json"
+    },
+    "b36d89143e5a27e5329e22b9649ef5eeb0406b4c170492c53afabfddbe51c7f2": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-res-sendfile.express-res-sendfile",
+      "file": "routes/logfileServer.ts"
+    },
+    "b4c7e8414e4e6e4e3788acfd18550516b241de383aa7935a421957482e7fb397": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-res-sendfile.express-res-sendfile",
+      "file": "routes/keyServer.ts"
+    },
+    "b53723ae417a617dc3385c5eab70edfbc0a2bd870e6d3dff494836fdbb951adc": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.good.good_helmet_checks.helmet_header_x_powered_by",
+      "file": "server.ts"
+    },
+    "ba09bc45be883eb9715f97ea3870dea52853cd2bab1f0610912d1d05c7ad64ac": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "bb8f2c4dcbd2913ce53120290a7efda9a4cdd0c00afddf5d19134fdb512ea5b7": {
+      "tool": "trivy",
+      "rule_id": "CVE-2017-16016",
+      "file": "package-lock.json"
+    },
+    "bc44205a5b1ca933f68eec5bfaa05236336431301c08f81ba40ad17da9982f72": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "frontend/src/app/Services/conversation-storage.service.ts"
+    },
+    "bf7b8ca46539097024fb6382d8d27d37801f14d5d3e7f151efd2ba4a7bb6c2a4": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-93748",
+      "file": "package-lock.json"
+    },
+    "c04273aed9f852f0b786862ed3e40e1744ea84413febf23b1fb96c65c48b3a23": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-59874",
+      "file": "package-lock.json"
+    },
+    "c0f12e17054c2262857c5d8b340e2f04379b9fd147be459ae3137c00a65086ed": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "c31b4b837f3110c328210453a13c2c58c665644d32d15f970265d3e3c2ace171": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-res-sendfile.express-res-sendfile",
+      "file": "routes/quarantineServer.ts"
+    },
+    "c5554f5073cae87aecb6de5f62e4676ecc4124550848dfa636f5720c1a039b97": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_injection.node_nosqli_js_injection",
+      "file": "routes/showProductReviews.ts"
+    },
+    "c5b28fdd1de0641e32d53f3e58590c20d1cbab925ea69bdb2a9a457226d071bb": {
+      "tool": "semgrep",
+      "rule_id": "security.semgrep.pf-sequelize-raw-query-interpolation",
+      "file": "routes/login.ts"
+    },
+    "c5d3c6157b39d2506bb9023c1ecf89301011e8448de0e084ef126cb4ec352d54": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "c674aea4ee0901813c8fda32f2243109f5102d25d979ee6b262c20a4643b2df3": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_md5",
+      "file": "scripts/package.mjs"
+    },
+    "c6b37e78d8eeb2918c77796fafbd75478cfe0e58ca88b6f7043938ea1a5ac02d": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/user.test.ts"
+    },
+    "c899f29776940f87c7748c461b09db3eb6b8cd0faa55ae80ba03c3723c68ea6b": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "c9cdd4c92b89dd9419533b0378f011346f70b461002a68cccedf5527e516dcbf": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/data-export.test.ts"
+    },
+    "cb0d5c1589cf7b8fb61591ee46b9a3d741340b1dc84efe103f479a37188d6e2e": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/login.test.ts"
+    },
+    "cc9269ef32f17f51712dded7c5e77d0ceebf959c3a8bd396d0b90d75075d7f86": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "routes/captcha.ts"
+    },
+    "ccb6d60fe2e3045a9298a824a52b02571e4378d8089721a4e7fc0f2928888580": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/data-export.test.ts"
+    },
+    "cee69c1c8535cf684ce6f2838ac7bb203a862b88fa6856b7e5c63c4fb063b3f7": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.generic.hardcoded_secrets.node_username",
+      "file": "frontend/src/app/purchase-basket/purchase-basket.component.ts"
+    },
+    "d0a36eb15681c2383983927f6e3e83985c6b0819779013d90a2be1ece35c2594": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-23745",
+      "file": "package-lock.json"
+    },
+    "d1bb219b4650444fe1668e7ddaac347cf818bbda9204abaf365cd8d677a61d47": {
+      "tool": "trivy",
+      "rule_id": "NSWG-ECO-428",
+      "file": "package-lock.json"
+    },
+    "d1d21a9094ee2cfd31c1927bf440f90d25b47a3643962ee2a6ba61c411508979": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-112947",
+      "file": "frontend/package-lock.json"
+    },
+    "d21125f5810cd10775145a6a75238a7608e4bb8d7e31f9c0ef24a43f51fc1c03": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-23540",
+      "file": "package-lock.json"
+    },
+    "d22e9a40f0dcca9df150ffa32769e2b1e1f10de50c65245c77bfd1786493f2d4": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "d2d4b7b1ef11fa5b3112819d84434a0d2cabd0aba8536f79c70c343b1db0eed7": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "routes/captcha.ts"
+    },
+    "d52ba8525eadf9d5187f6f57c1eeb42e2d409bf87f46b45cfec30f0c66a92788": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-33987",
+      "file": "package-lock.json"
+    },
+    "dd0d8aef60a3311cc743d3a80595408746a75ea0ad4ad964d46fd200ddb49f01": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/server/verify.unit.test.ts"
+    },
+    "de12228f226852cb0ee941ed0068f84f4d825fb3ed59ad7ea32ee186fcc56a69": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-113654",
+      "file": "package-lock.json"
+    },
+    "de1af4a3ce4e339ce0c0915a3270f4debfbb7e3856f994a836067a24fe37bdd8": {
+      "tool": "gitleaks",
+      "rule_id": "jwt",
+      "file": "test/server/verify.unit.test.ts"
+    },
+    "deb884577f4bddf07941b943ac8a9c1c87782f00fcdfd69f39552fc7bd0371ef": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "df720ae0184c52a9430c9b0654e92ccc99799b3b7e15b41b59f1364473b14f33": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.generic.hardcoded_secrets.node_password",
+      "file": "frontend/src/app/login/login.component.ts"
+    },
+    "df747ce07c9b607ff14560d83e0be832a2fe97b4a4ba5119d917b6e044347653": {
+      "tool": "trivy",
+      "rule_id": "CVE-2017-18214",
+      "file": "package-lock.json"
+    },
+    "e044b869e18337cb3400fd4bd69dcc2330ed14988fbbe3f35808628095a78f9c": {
+      "tool": "trivy",
+      "rule_id": "CVE-2016-4055",
+      "file": "package-lock.json"
+    },
+    "e09a56b35e783e9abe15214a50180282f98c3d19976d62114e72e1cd3f049e7f": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.timing_attack_node.node_timing_attack",
+      "file": "routes/changePassword.ts"
+    },
+    "e1d1302b1c87af65ff6c70a3c590bae8ad54c34603f1fdbbb768c8d06e6bff4b": {
+      "tool": "trivy",
+      "rule_id": "CVE-2021-32822",
+      "file": "package-lock.json"
+    },
+    "e34a698bc374d84a7eae503cb280d184f2a7aa5978e4060782bdb74551b832f7": {
+      "tool": "semgrep",
+      "rule_id": "javascript.express.security.audit.express-check-directory-listing.express-check-directory-listing",
+      "file": "server.ts"
+    },
+    "e4fc62a7795915494f7a5aa11a40df7c4f0bb315508b8f953c47b26f928abe74": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.headers.header_cors_star.express_cors",
+      "file": "server.ts"
+    },
+    "e5eb5b17e3618b5e01d3676b8a9e70908b50a8855dc1dd0462d2269ebfff16aa": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-45736",
+      "file": "frontend/package-lock.json"
+    },
+    "e631962a737d114b13fbfb52f7aa401534ea5bd2a278cab89b1cf1ec59458502": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-63670",
+      "file": "package-lock.json"
+    },
+    "e6bbc59e479bfa4b471a4e16c2b44a47aa919ad435687182806a71b9f049d9d0": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/erasure-request.test.ts"
+    },
+    "e7c1826c95a5b3a114caf4187a2d43fa317d839c051d82977ecf8c4066b9ac8f": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts"
+    },
+    "e8247beac923a667954ca6c199711cf6ae58212fabb2cb3b1bef4e62187172a4": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/cypress/e2e/login.spec.ts"
+    },
+    "e8e1b69cd84150fbc11ffd9805da4140d8bbe66bfdfd6c29ec312cf6aeb4bc85": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-48779",
+      "file": "frontend/package-lock.json"
+    },
+    "ea9b956920dab118d083545867213c34e23f44bb7c93c6033a4e759c8d3145fb": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "eb47e8ef0cd0381d15849563e382439dde4094cbe511d600b792de7cedd08315": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "routes/captcha.ts"
+    },
+    "ec4188438a98c40cda6ec93d4e18ea4fff45cddb7b711d761e0e1eced8c434f9": {
+      "tool": "trivy",
+      "rule_id": "CVE-2019-25225",
+      "file": "package-lock.json"
+    },
+    "f0ac43f3818c03aa7a390ef61eed1518ac1fadbca39d977ea2c72952b6a25a27": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/erasure-request.test.ts"
+    },
+    "f1e5a37ab4a82fddd7b7f7480d15b020f07a60c678aacac110067416a8d7213b": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator",
+      "file": "lib/insecurity.ts"
+    },
+    "f32232de4fc3193c06400b12ce6b0ee27373ddd2ffebdf470f39ec39b81df18e": {
+      "tool": "trivy",
+      "rule_id": "CVE-2023-46233",
+      "file": "package-lock.json"
+    },
+    "f35e5bee7c207f55d9203a63d3dcada5e39e511c244d56c73f0099c00efcbc5b": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-26960",
+      "file": "package-lock.json"
+    },
+    "f5673fd8588cbc1b098adbd8bb1c2f6ae89b7c99db1c81260e6fe7ff847f1b78": {
+      "tool": "trivy",
+      "rule_id": "CVE-2025-57349",
+      "file": "package-lock.json"
+    },
+    "f653df31f2f9c65833555bd778aa4b23f59ce4abc30f3370cbeade81019f8975": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-39243",
+      "file": "package-lock.json"
+    },
+    "f7f668b8e44f1885df0ea4e57ec29c496f9b65890adf6b7ea61ba8f962b2d3b2": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/user.test.ts"
+    },
+    "f9896b104a1f70c080aa0809dbf4d08e3c06630a584ecebd3af1c660cb4c1aa1": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/checkKeys.test.ts"
+    },
+    "fae9e5d1c28233ebaa1ed8cfafdca1adb12fbfb5f7d2d93e8505502d55ddfeac": {
+      "tool": "trivy",
+      "rule_id": "CVE-2026-45822",
+      "file": "package-lock.json"
+    },
+    "fd0ff61b8367b24cc5908b639beaa66c606e41afd35325341d80858c51c64031": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.headers.header_cors_star.generic_cors",
+      "file": "server.ts"
+    },
+    "fd5e2cca9c417a7f7b6712086f4c7f43cffab53c6b9c85738b93fdaec42931bc": {
+      "tool": "gitleaks",
+      "rule_id": "generic-api-key",
+      "file": "test/api/2fa.test.ts"
+    },
+    "ff224a9a2d22dce9001cc3f35febbacf7db424063ae2dab493f26bab34282674": {
+      "tool": "semgrep",
+      "rule_id": "ajinabraham.njsscan.database.nosql_find_injection.node_nosqli_injection",
+      "file": "routes/dataErasure.ts"
+    },
+    "ffc177f3cea6991da3ed9aa7852f8c30b786f3ba457835d04d670553d857f477": {
+      "tool": "trivy",
+      "rule_id": "CVE-2022-23540",
+      "file": "package-lock.json"
+    }
+  }
+}
