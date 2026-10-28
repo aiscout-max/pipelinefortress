@@ -39,3 +39,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# PipelineFortress: lockfiles are committed (overrides the ignore above)
+!package-lock.json

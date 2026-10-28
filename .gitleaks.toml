@@ -1,0 +1,10 @@
+# PipelineFortress gitleaks config. Picked up automatically by the pre-commit
+# hook and by the CI secrets stage.
+title = "PipelineFortress"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Redaction-layer test fixtures contain fake canary secrets on purpose"
+paths = ['''^fortress/tests/fixtures/''']

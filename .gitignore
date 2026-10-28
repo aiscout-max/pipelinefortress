@@ -71,3 +71,12 @@ config/*.yml
 # Misc
 .playwright-mcp/
 cypress/screenshots/
+
+# PipelineFortress: local secrets never leave this machine
+.env
+.env.*
+!.env.example
+reports/
+
+# PipelineFortress: lockfiles are committed (overrides the ignore above)
+!package-lock.json

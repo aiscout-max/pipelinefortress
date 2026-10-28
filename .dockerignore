@@ -31,3 +31,11 @@ scripts/
 terraform/
 test/
 vagrant/
+.env
+.env.*
+
+# PipelineFortress tooling is not part of the application image
+fortress/
+security/
+deploy/
+reports/

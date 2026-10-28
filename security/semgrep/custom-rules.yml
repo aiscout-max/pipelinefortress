@@ -1,0 +1,17 @@
+rules:
+  - id: pf-sequelize-raw-query-interpolation
+    message: >-
+      Raw SQL built with template-literal interpolation is passed to
+      sequelize.query(). Pass user input through `replacements` or `bind`
+      parameters instead.
+    severity: ERROR
+    languages: [typescript, javascript]
+    metadata:
+      category: security
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      owasp:
+        - "A03:2021 - Injection"
+    pattern-either:
+      - pattern: $ORM.sequelize.query(`...${$INPUT}...`, ...)
+      - pattern: $DB.query(`...${$INPUT}...`, ...)

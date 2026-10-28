@@ -1,0 +1,20 @@
+# PipelineFortress SAST scope. Everything not listed here is scanned.
+:include .gitignore
+
+node_modules/
+build/
+dist/
+frontend/dist/
+frontend/node_modules/
+*.min.js
+
+# Tests and e2e specs are not shipped to production.
+test/
+cypress/
+frontend/src/**/*.spec.ts
+
+# Juice Shop "coding challenge" answer files: displayed in the UI as text,
+# never imported or executed. Scanning them only inflates the count.
+data/static/codefixes/
+
+fortress/tests/fixtures/

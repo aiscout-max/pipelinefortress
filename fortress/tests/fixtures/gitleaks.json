@@ -1,0 +1,11 @@
+[
+  {
+    "RuleID": "aws-access-token",
+    "Description": "Identified a pattern that may indicate AWS credentials.",
+    "File": "config/settings.ts",
+    "StartLine": 7,
+    "Match": "const key = 'AKIAFAKEFAKEFAKEFAKE'",
+    "Secret": "AKIAFAKEFAKEFAKEFAKE",
+    "Fingerprint": "config/settings.ts:aws-access-token:7"
+  }
+]

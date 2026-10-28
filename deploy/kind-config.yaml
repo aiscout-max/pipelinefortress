@@ -1,0 +1,6 @@
+# Single-node throwaway cluster created inside the CI runner for every run.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: fortress
+nodes:
+  - role: control-plane

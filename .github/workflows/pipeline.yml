@@ -1,0 +1,179 @@
+name: PipelineFortress
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+  SEMGREP_VERSION: 1.182.1
+  GITLEAKS_VERSION: 8.30.1
+  TRIVY_VERSION: 0.76.1
+  KIND_VERSION: v0.33.0
+
+jobs:
+  build-test:
+    name: Build & unit test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install from lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Server unit tests
+        run: npm run test:server
+
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Semgrep
+        run: pipx install "semgrep==${SEMGREP_VERSION}"
+      - name: Scan
+        run: |
+          mkdir -p reports
+          semgrep scan --metrics=off \
+            --config p/javascript --config p/typescript --config p/nodejsscan \
+            --config security/semgrep \
+            --json --output reports/semgrep.json .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: semgrep
+          path: reports/semgrep.json
+
+  secrets:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks
+        run: security/install-tools.sh gitleaks
+      - name: Scan working tree
+        run: |
+          mkdir -p reports
+          gitleaks dir . --redact --no-banner --exit-code 0 \
+            --report-format json --report-path reports/gitleaks.json
+      # A secret committed and then deleted inside the same PR is invisible to
+      # the working-tree scan but stays in git history forever. Any secret in
+      # the PR's own commits fails immediately; there is nothing to baseline.
+      - name: Scan this PR's commits
+        if: github.event_name == 'pull_request'
+        run: |
+          gitleaks git --redact --no-banner \
+            --log-opts "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: gitleaks
+          path: reports/gitleaks.json
+
+  sca:
+    name: SCA (Trivy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      # The root lockfile is committed. The frontend one is resolved here until
+      # it can be committed too (see report, "Known gaps").
+      - name: Resolve frontend lockfile
+        continue-on-error: true
+        working-directory: frontend
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Install Trivy
+        run: security/install-tools.sh trivy
+      - name: Scan dependencies
+        run: |
+          mkdir -p reports
+          trivy fs --scanners vuln --exit-code 0 --format json --output reports/trivy-fs.json .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trivy-fs
+          path: reports/trivy-fs.json
+
+  security-gate:
+    name: Security gate
+    needs: [sast, secrets, sca]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: reports
+          merge-multiple: true
+      - name: Test the gate itself
+        run: pipx run pytest fortress/tests -q
+      - name: Consolidate findings
+        run: |
+          python3 -m fortress.normalize \
+            --semgrep reports/semgrep.json \
+            --gitleaks reports/gitleaks.json \
+            --trivy-fs reports/trivy-fs.json \
+            -o reports/findings.json
+      - name: Evaluate gate
+        run: |
+          python3 -m fortress.gate \
+            --findings reports/findings.json \
+            --baseline security/baselines/baseline.json \
+            --policy security/gate-policy.toml \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --write-baseline reports/baseline-candidate.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: consolidated-findings
+          path: |
+            reports/findings.json
+            reports/baseline-candidate.json
+
+  deploy:
+    name: Deploy to kind (staging)
+    needs: [build-test, security-gate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build image
+        run: docker build --build-arg VCS_REF="${GITHUB_SHA}" -t juice-shop:ci .
+      - name: Install kind
+        run: security/install-tools.sh kind
+      - name: Create cluster
+        run: kind create cluster --config deploy/kind-config.yaml --wait 120s
+      - name: Load image and deploy
+        run: |
+          kind load docker-image juice-shop:ci --name fortress
+          kubectl apply -f deploy/k8s/juice-shop.yaml
+          kubectl -n juice-shop rollout status deployment/juice-shop --timeout=300s
+      - name: Smoke test
+        run: |
+          kubectl -n juice-shop port-forward svc/juice-shop 3000:3000 >/dev/null 2>&1 &
+          for _ in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:3000/rest/admin/application-version && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Diagnostics
+        if: failure()
+        run: |
+          kubectl -n juice-shop describe pods
+          kubectl -n juice-shop logs deployment/juice-shop --tail=100

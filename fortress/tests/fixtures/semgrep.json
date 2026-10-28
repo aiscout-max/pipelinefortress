@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "check_id": "security.semgrep.pf-sequelize-raw-query-interpolation",
+      "path": "routes/login.ts",
+      "start": {"line": 2, "col": 10},
+      "end": {"line": 2, "col": 90},
+      "extra": {
+        "severity": "ERROR",
+        "message": "Raw SQL built with template-literal interpolation is passed to sequelize.query().",
+        "lines": "  return models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email}'`)",
+        "metadata": {"cwe": ["CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"]}
+      }
+    }
+  ],
+  "errors": []
+}
