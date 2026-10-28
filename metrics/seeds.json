@@ -1,0 +1,28 @@
+{
+  "note": "Each seed is a draft PR that deliberately introduces one weakness. 'expected' is the stage we predicted would catch it, recorded before the runs. seed/00-control changes only documentation and measures run-to-run noise.",
+  "control": "seed/00-control",
+  "seeds": [
+    {"id": "01", "branch": "seed/01-secret-in-tree", "expected": "secrets",
+     "title": "Hard-coded payment API key in a new config module"},
+    {"id": "02", "branch": "seed/02-secret-in-history", "expected": "secrets",
+     "title": "API key committed, then deleted in a follow-up commit"},
+    {"id": "03", "branch": "seed/03-sql-injection", "expected": "sast",
+     "title": "New route builds raw SQL from a URL parameter"},
+    {"id": "04", "branch": "seed/04-tls-verification-off", "expected": "sast",
+     "title": "TLS certificate verification disabled process-wide"},
+    {"id": "05", "branch": "seed/05-jwt-alg-none", "expected": "sast",
+     "title": "JWT verification accepts the 'none' algorithm"},
+    {"id": "06", "branch": "seed/06-vulnerable-dependency", "expected": "sca",
+     "title": "Direct dependency on minimist 1.2.5 (critical, fix available)"},
+    {"id": "07", "branch": "seed/07-privileged-container", "expected": "iac",
+     "title": "Deployment runs the container privileged"},
+    {"id": "08", "branch": "seed/08-nodeport-service", "expected": "iac",
+     "title": "Staging Service exposed as NodePort (custom policy)"},
+    {"id": "09", "branch": "seed/09-full-os-base-image", "expected": "container",
+     "title": "Runtime image switched from distroless to full Debian"},
+    {"id": "10", "branch": "seed/10-insecure-cookie", "expected": "dast",
+     "title": "Every response sets a cookie without HttpOnly or SameSite"},
+    {"id": "11", "branch": "seed/11-unauthenticated-export", "expected": "none",
+     "title": "Admin user-export endpoint with no authorization check"}
+  ]
+}
