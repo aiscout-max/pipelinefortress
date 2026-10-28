@@ -172,5 +172,18 @@
       "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40744685398",
       "url": "https://github.com/aiscout-max/pipelinefortress/pull/13"
     }
+  ],
+  "follow_up": [
+    {
+      "id": "09b",
+      "title": "Seed 09 re-run after adding the container regression budget (max_new = 50)",
+      "blocked": true,
+      "failed_jobs": [
+        "Image scan & SBOM"
+      ],
+      "evidence": "Regression budget exceeded: 4452 new container findings (budget 50)",
+      "run": "https://github.com/aiscout-max/pipelinefortress/actions/runs/40747119278",
+      "url": "https://github.com/aiscout-max/pipelinefortress/pull/14"
+    }
   ]
 }

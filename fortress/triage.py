@@ -29,6 +29,7 @@ from .redact import NEVER_SEND_CATEGORIES, RedactionError, Redactor
 
 DEFAULT_MODEL = "gemini-flash-latest"
 RETRY_DELAYS = [10, 30, 90]  # seconds
+REQUEST_TIMEOUT = 300  # seconds; a loaded free tier can take minutes per batch
 BATCH_SIZE = 10
 MAX_CLUSTERS = 30
 _ID = re.compile(r"\b(?:CVE-\d{4}-\d{4,}|GHSA(?:-[a-z0-9]{4}){3})\b")
@@ -134,17 +135,23 @@ def gemini(payload_text: str, model: str, api_key: str) -> dict:
         data=json.dumps(body).encode(),
         headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
     )
-    # The free tier answers 429/503 under load; back off rather than give up on the batch.
+    # Under load the free tier answers 429/503 or simply stalls; back off and
+    # retry rather than give up on the batch.
     for attempt, delay in enumerate(RETRY_DELAYS + [None]):
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
                 answer = json.load(resp)
             return json.loads(answer["candidates"][0]["content"]["parts"][0]["text"])
         except urllib.error.HTTPError as err:
             if err.code not in (429, 500, 503) or delay is None:
                 raise
-            print(f"model returned HTTP {err.code}; retry {attempt + 1} in {delay}s", file=sys.stderr)
-            time.sleep(delay)
+            reason = f"HTTP {err.code}"
+        except (TimeoutError, ConnectionError) as err:
+            if delay is None:
+                raise
+            reason = type(err).__name__
+        print(f"model call failed ({reason}); retry {attempt + 1} in {delay}s", file=sys.stderr)
+        time.sleep(delay)
     raise AssertionError("unreachable")
 
 
@@ -214,7 +221,7 @@ def triage(findings: list[dict], audit_dir: Path, model: str, api_key: str | Non
             continue
         try:
             answer = gemini(payload, model, api_key or "")
-        except (urllib.error.URLError, KeyError, ValueError) as err:
+        except (OSError, KeyError, ValueError) as err:  # OSError covers URLError and timeouts
             reason = f"HTTP {err.code}" if isinstance(err, urllib.error.HTTPError) else type(err).__name__
             for c in batch:
                 c.update(status="needs human triage", rationale=f"Model call failed ({reason}).")

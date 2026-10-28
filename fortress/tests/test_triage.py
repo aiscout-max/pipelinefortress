@@ -66,6 +66,17 @@ def test_triage_accepts_valid_rejects_invalid_and_never_sends_secrets(tmp_path, 
     assert "routes/login.ts" not in audited and "config/settings.ts" not in audited
 
 
+def test_network_failure_marks_batch_for_humans_instead_of_crashing(tmp_path, monkeypatch):
+    def stalled(*_args):
+        raise TimeoutError("The read operation timed out")
+
+    monkeypatch.setattr(triage, "gemini", stalled)
+    result = triage.triage(all_findings(), tmp_path / "audit", "test-model", "key", dry_run=False)
+    sent = [c for c in result["clusters"] if c["category"] != "secrets"]
+    assert {c["status"] for c in sent} == {"needs human triage"}
+    assert {c["rationale"] for c in sent} == {"Model call failed (TimeoutError)."}
+
+
 def test_dry_run_audits_without_calling_the_model(tmp_path, monkeypatch):
     def boom(*_args):
         raise AssertionError("model must not be called in a dry run")
