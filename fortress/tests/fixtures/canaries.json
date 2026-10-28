@@ -1,0 +1,20 @@
+{
+  "_note": "Fake values with the exact shape of real ones. None of them is a live credential. This directory is allowlisted in .gitleaks.toml.",
+  "canaries": {
+    "aws": "AKIAQ7RTZ2WXK5LMN3PB",
+    "private-key": "-----BEGIN RSA PRIVATE KEY-----",
+    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYW5hcnkifQ.c2lnbmF0dXJlY2FuYXJ5MTIz",
+    "github": "ghp_c4n4ryT0k3nV4lu3F0rT3st1ngPurp0s3s0nly",
+    "random": "q8Zr2LwX9vTn4KpY7mBc3Hs6Jd1Fg5Ae",
+    "assignment": "password = 'hunter2hunter2'",
+    "sql": "SELECT * FROM Users WHERE email = 'x'",
+    "code": "const t = req.query.q; db.run(`x ${t}`);",
+    "fence": "```ts\nfoo()\n```"
+  },
+  "identifiers": {
+    "email": "jane.doe@juice-sh.op",
+    "url": "https://payments.example.com/api",
+    "host": "billing-db.corp",
+    "ip": "10.20.30.40"
+  }
+}
