@@ -73,7 +73,12 @@ spec:
           ports:
             - name: http
               containerPort: 3000
-          securityContext: *containerSecurity
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
           resources:
             requests:
               cpu: 250m
