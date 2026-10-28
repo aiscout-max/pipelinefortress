@@ -179,6 +179,12 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   /* Compression for all requests */
   app.use(compression())
 
+  /* Visit tracking cookie */
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    res.cookie('pf_visit', '1')
+    next()
+  })
+
   /* Bludgeon solution for possible CORS problems: Allow everything! */
   app.options('*', cors())
   app.use(cors())
