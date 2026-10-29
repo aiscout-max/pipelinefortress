@@ -35,10 +35,11 @@ was checked byte-for-byte against `triage-system-v1.md`.
 
 ## Results with v1
 
-From two real runs on the Phase 2 findings, scored against
+From the first real run on the Phase 2 findings (20 of 30 clusters answered;
+one batch was lost to HTTP 503s in both attempts), scored against
 `metrics/triage-labels.json`:
 
-- 0 invented CVE/GHSA identifiers and 0 invented versions in accepted answers
+- 0 invented CVE/GHSA identifiers and 0 invented versions in the 20 answers
 - Recall on real issues 1.0: no real issue was dismissed as a false positive
 - No false positive was flagged. Without code or reachability context, the
   model cannot tell a build-time dependency or an ORM call from an
