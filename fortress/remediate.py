@@ -64,7 +64,9 @@ def apply_fix(root: Path, package: str, version: str) -> str:
     else:
         pkg.setdefault("overrides", {})[package] = version
         how = "pinned the transitive dependency with an npm override"
-    path.write_text(json.dumps(pkg, indent=2) + "\n")
+    # ensure_ascii=False keeps "Björn" as written; the dry run turned it into
+    # "Björn" and every PR diff carried that noise.
+    path.write_text(json.dumps(pkg, indent=2, ensure_ascii=False) + "\n")
     run("npm", "install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund", cwd=root)
     return how
 

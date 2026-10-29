@@ -14,12 +14,14 @@ def test_pick_version_prefers_smallest_fix_on_the_same_major():
 def test_apply_fix_bumps_direct_and_overrides_transitive(tmp_path, monkeypatch):
     monkeypatch.setattr(remediate, "run", lambda *a, **k: "")  # no npm in unit tests
     (tmp_path / "package.json").write_text(json.dumps(
-        {"dependencies": {"crypto-js": "^3.3.0"}, "devDependencies": {"vite": "~8.3.0"}}))
+        {"author": "Björn", "dependencies": {"crypto-js": "^3.3.0"}, "devDependencies": {"vite": "~8.3.0"}},
+        ensure_ascii=False))
 
     assert "direct dependency" in remediate.apply_fix(tmp_path, "crypto-js", "4.2.0")
     assert "direct devDependency" in remediate.apply_fix(tmp_path, "vite", "8.3.3")
     assert "override" in remediate.apply_fix(tmp_path, "tar", "7.5.19")
 
+    assert "Björn" in (tmp_path / "package.json").read_text()  # no ö noise in the diff
     pkg = json.loads((tmp_path / "package.json").read_text())
     assert pkg["dependencies"]["crypto-js"] == "^4.2.0"  # keeps the range style
     assert pkg["devDependencies"]["vite"] == "~8.3.3"
