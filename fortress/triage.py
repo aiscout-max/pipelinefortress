@@ -21,11 +21,12 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from collections import defaultdict
+from collections import defaultdict, deque
 from pathlib import Path
 
 from . import severity_rank
 from .redact import NEVER_SEND_CATEGORIES, RedactionError, Redactor
+from .remediate import target_version
 
 DEFAULT_MODEL = "gemini-flash-latest"
 RETRY_DELAYS = [10, 30, 90]  # seconds
@@ -57,7 +58,8 @@ For EVERY cluster, return:
 
 Hard rules:
 - Mention only vulnerability IDs (CVE/GHSA) that appear in that cluster's data.
-- Recommend only versions listed in that cluster's fixed_versions.
+- Recommend only versions listed in that cluster's fixed_versions; when upgrade_to is
+  present, that single version fixes every listed vulnerability, so recommend it.
 - If you are not sure, say so in the rationale instead of inventing detail."""
 
 RESPONSE_SCHEMA = {
@@ -82,12 +84,18 @@ RESPONSE_SCHEMA = {
 
 def cluster_key(f: dict) -> tuple:
     if f["category"] in ("sca", "container") and f.get("package"):
-        return ("dep", f["rule_id"], f["package"])  # same CVE in lockfile and image
+        # One upgrade fixes every CVE of a package, in the lockfile and the image alike.
+        return ("dep", f["package"])
     if f["category"] == "sast" and f.get("file"):
         return ("code", f["file"], f.get("line"))  # several rules flagging one line
     if f["category"] == "iac":
         return ("iac", f["rule_id"], Path(f.get("file") or "").name, f.get("line"))  # duplicated TF trees
     return (f["category"], f["rule_id"], f.get("file"), f.get("line"))
+
+
+def split_versions(value: str | None) -> list[str]:
+    """'8.3.3, 8.2.4' -> ['8.2.4', '8.3.3']; '>=4.2.2' -> ['4.2.2'] (a fix floor is a version)."""
+    return sorted({re.sub(r"^[>=~^\s]+", "", v).strip() for v in (value or "").split(",") if v.strip()})
 
 
 def build_clusters(findings: list[dict]) -> list[dict]:
@@ -107,7 +115,10 @@ def build_clusters(findings: list[dict]) -> list[dict]:
             "cwe": sorted({c for f in members for c in f.get("cwe") or []}),
             "package": top.get("package"),
             "installed_versions": sorted({f["installed_version"] for f in members if f.get("installed_version")}),
-            "fixed_versions": sorted({v.strip() for f in members for v in (f.get("fixed_version") or "").split(",") if v.strip()}),
+            "fixed_versions": sorted({v for f in members for v in split_versions(f.get("fixed_version"))}),
+            # Per vulnerability, the versions that fix it; the upgrade target must satisfy all of them.
+            "fixes": {f["cve"] or f["rule_id"]: split_versions(f.get("fixed_version")) for f in members
+                      if f["category"] in ("sca", "container")},
             "files": sorted({f["file"] for f in members if f.get("file")}),
             "line": top.get("line"),
             "members": [f["fingerprint"] for f in members],
@@ -118,6 +129,28 @@ def build_clusters(findings: list[dict]) -> list[dict]:
     for n, c in enumerate(clusters, 1):
         c["cluster_id"] = f"C{n:03d}"
     return clusters
+
+
+# Clusters per round when choosing what the model sees. Without this the top
+# 30 by severity were all dependency clusters and the model never judged a
+# single SAST, IaC or DAST finding, which is where false positives live.
+SELECTION_WEIGHTS = {"dependencies": 2, "sast": 2, "iac": 1, "dast": 1}
+
+
+def select_for_model(clusters: list[dict], limit: int = MAX_CLUSTERS) -> list[dict]:
+    queues: dict[str, deque] = {lane: deque() for lane in SELECTION_WEIGHTS}
+    for c in clusters:  # already in pre-rank order
+        if c["category"] in NEVER_SEND_CATEGORIES:
+            continue
+        lane = "dependencies" if c["category"] in ("sca", "container") else c["category"]
+        queues.setdefault(lane, deque()).append(c)
+    picked: list[dict] = []
+    while len(picked) < limit and any(queues.values()):
+        for lane, queue in queues.items():
+            for _ in range(SELECTION_WEIGHTS.get(lane, 1)):
+                if queue and len(picked) < limit:
+                    picked.append(queue.popleft())
+    return picked
 
 
 # ------------------------------------------------------------------- model I/O
@@ -161,6 +194,8 @@ def outbound_view(cluster: dict, redactor: Redactor) -> dict:
                                     "ids", "cwe", "package", "installed_versions", "fixed_versions")
             if cluster.get(k) not in (None, [], "")}
     view["files"] = [redactor.ps.path(p) for p in cluster["files"][:5]]
+    if target_version(cluster):
+        view["upgrade_to"] = target_version(cluster)  # fixes every fixable CVE in the cluster
     view["occurrences"] = len(cluster["members"])
     view["title"] = redactor.ps.text(view["title"])
     return view
@@ -203,8 +238,8 @@ def triage(findings: list[dict], audit_dir: Path, model: str, api_key: str | Non
         else:
             c.update(status="not triaged (below the top clusters)")
 
-    # Clusters never mix categories (see cluster_key), so a secrets cluster holds only secrets.
-    to_send = [c for c in clusters if c["category"] not in NEVER_SEND_CATEGORIES][:MAX_CLUSTERS]
+    # Clusters never mix secrets with anything else (see cluster_key).
+    to_send = select_for_model(clusters)
     for start in range(0, len(to_send), BATCH_SIZE):
         batch = to_send[start:start + BATCH_SIZE]
         try:

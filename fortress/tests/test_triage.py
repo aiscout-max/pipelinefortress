@@ -85,3 +85,23 @@ def test_dry_run_audits_without_calling_the_model(tmp_path, monkeypatch):
     result = triage.triage(all_findings(), tmp_path / "audit", "test-model", None, dry_run=True)
     assert result["stats"]["sent_to_model"] > 0
     assert list((tmp_path / "audit").iterdir())
+
+
+def test_fix_floors_are_normalised():
+    assert triage.split_versions(">=4.2.2") == ["4.2.2"]
+    assert triage.split_versions("8.3.3, 8.2.4") == ["8.2.4", "8.3.3"]
+    assert triage.split_versions(None) == []
+
+
+def test_model_sees_every_stage_not_just_dependencies():
+    deps = [{"category": "sca", "cluster_id": f"D{i}"} for i in range(40)]
+    others = ([{"category": "sast", "cluster_id": f"S{i}"} for i in range(40)]
+              + [{"category": "iac", "cluster_id": f"I{i}"} for i in range(40)]
+              + [{"category": "dast", "cluster_id": "Z1"}]
+              + [{"category": "secrets", "cluster_id": "X1"}])
+    picked = triage.select_for_model(deps + others, limit=30)
+    lanes = [c["category"] for c in picked]
+    assert len(picked) == 30 and "secrets" not in lanes
+    # Weights 2:2:1:1 per round; the dast lane runs dry after one, the last round is cut at 30.
+    assert (lanes.count("sca"), lanes.count("sast"), lanes.count("iac"), lanes.count("dast")) == (12, 12, 5, 1)
+    assert [c["cluster_id"] for c in picked if c["category"] == "sca"][:3] == ["D0", "D1", "D2"]  # rank order kept

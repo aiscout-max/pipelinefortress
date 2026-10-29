@@ -35,3 +35,13 @@ def test_pr_body_states_human_approval_and_provenance():
     assert "A human must review and approve" in body
     assert "not from model text" in body
     assert "- Upgrade crypto-js to 4.2.0." in body
+
+
+def test_target_version_fixes_every_cve_in_a_package_cluster():
+    tar = {"installed_versions": ["6.2.1"],
+           "fixes": {"CVE-A": ["7.5.3"], "CVE-B": ["7.5.19"], "CVE-C": ["7.5.10"], "GHSA-none": []}}
+    assert remediate.target_version(tar) == "7.5.19"
+    assert remediate.fixable_ids(tar) == ["CVE-A", "CVE-B", "CVE-C"]
+    minimatch = {"installed_versions": ["3.0.5"],
+                 "fixes": {"CVE-1": ["10.2.3", "3.1.4", "4.2.5"], "CVE-2": ["10.2.1", "3.1.3", "4.2.4"]}}
+    assert remediate.target_version(minimatch) == "3.1.4"  # stays on the installed major line

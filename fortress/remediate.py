@@ -39,6 +39,17 @@ def pick_version(installed: list[str], fixed: list[str]) -> str | None:
     return (same_major or newer or [None])[0]
 
 
+def target_version(cluster: dict) -> str | None:
+    """Lowest single upgrade that fixes every fixable vulnerability in a package cluster."""
+    picks = [pick_version(cluster["installed_versions"], fixed) for fixed in cluster.get("fixes", {}).values()]
+    picks = [p for p in picks if p]
+    return max(picks, key=semver) if picks else None
+
+
+def fixable_ids(cluster: dict) -> list[str]:
+    return sorted(i for i, fixed in cluster.get("fixes", {}).items() if fixed)
+
+
 def apply_fix(root: Path, package: str, version: str) -> str:
     """Bump a direct dependency, or pin a transitive one through npm overrides."""
     path = root / "package.json"
@@ -112,8 +123,7 @@ def main(argv: list[str] | None = None) -> int:
 
     clusters = json.loads(args.triage.read_text())["clusters"]
     candidates = [c for c in clusters if c["status"] == "triaged" and c["category"] in ("sca", "container")
-                  and c.get("package") and pick_version(c["installed_versions"], c["fixed_versions"])
-                  and not c.get("likely_false_positive")]
+                  and c.get("package") and target_version(c) and not c.get("likely_false_positive")]
     candidates.sort(key=lambda c: c["priority"])
 
     opened, seen = 0, set()
@@ -121,16 +131,17 @@ def main(argv: list[str] | None = None) -> int:
         if opened >= args.max_prs or c["package"] in seen:
             continue
         seen.add(c["package"])
-        version = pick_version(c["installed_versions"], c["fixed_versions"])
+        version = target_version(c)
         branch = f"{BRANCH_PREFIX}{c['package']}-{version}"
         run("git", "checkout", "-q", "-B", branch, args.base, cwd=args.root)
         how = apply_fix(args.root, c["package"], version)
-        left = remaining(args.root, c["package"], c["ids"])
+        left = remaining(args.root, c["package"], fixable_ids(c))
         if left:
             print(f"skip {c['package']}: still vulnerable to {', '.join(left)} after {version}", file=sys.stderr)
             run("git", "checkout", "-q", "--", "package.json", "package-lock.json", cwd=args.root)
             continue
-        title = f"fix(deps): {c['package']} → {version} ({', '.join(c['ids'][:2]) or c['severity']})"
+        fixed = fixable_ids(c)
+        title = f"fix(deps): {c['package']} → {version} ({len(fixed)} {'vulnerability' if len(fixed) == 1 else 'vulnerabilities'})"
         run("git", "commit", "-q", "-am", f"{title}\n\nAI-generated remediation for {c['cluster_id']}; "
             "target version from the scanner, verified by re-scan.\n\n"
             "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>", cwd=args.root)
