@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  GH_REPO: ${{ github.repository }}  # gh must never resolve to the upstream fork parent
   NODE_VERSION: 24
   TRIVY_VERSION: 0.76.1
   MAX_PRS: 3

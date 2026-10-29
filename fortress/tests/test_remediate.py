@@ -47,3 +47,14 @@ def test_target_version_fixes_every_cve_in_a_package_cluster():
     minimatch = {"installed_versions": ["3.0.5"],
                  "fixes": {"CVE-1": ["10.2.3", "3.1.4", "4.2.5"], "CVE-2": ["10.2.1", "3.1.3", "4.2.4"]}}
     assert remediate.target_version(minimatch) == "3.1.4"  # stays on the installed major line
+
+
+def test_refuses_to_run_without_an_explicit_repo(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+    (tmp_path / "triage.json").write_text('{"clusters": []}')
+    try:
+        remediate.main(["--triage", str(tmp_path / "triage.json")])
+    except SystemExit as exit_:
+        assert exit_.code == 2
+    else:
+        raise AssertionError("must not fall back to gh's default repository (the upstream parent in a fork)")

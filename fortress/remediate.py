@@ -6,12 +6,13 @@ version comes from the scanner's fixed_version, never from model text. Before
 a PR is opened the scanner runs again on the patched tree; if the CVE is still
 there, no PR is opened. PRs are drafts, labelled, and need human approval.
 
-usage: python3 -m fortress.remediate --triage reports/triage/triage.json [--max-prs 3] [--dry-run]
+usage: python3 -m fortress.remediate --triage reports/triage/triage.json --repo owner/name [--max-prs 3] [--dry-run]
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -119,9 +120,15 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--triage", type=Path, required=True)
     p.add_argument("--root", type=Path, default=Path("."))
     p.add_argument("--base", default="master")
+    # Never let gh pick the repository: in a fork it resolves to the upstream
+    # parent, and the first real run tried to open PRs on juice-shop/juice-shop.
+    p.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY"),
+                   help="owner/name the PRs belong to (default: $GITHUB_REPOSITORY)")
     p.add_argument("--max-prs", type=int, default=3)
     p.add_argument("--dry-run", action="store_true", help="patch and verify, but do not push or open PRs")
     args = p.parse_args(argv)
+    if not args.repo:
+        p.error("--repo is required outside GitHub Actions")
 
     clusters = json.loads(args.triage.read_text())["clusters"]
     candidates = [c for c in clusters if c["status"] == "triaged" and c["category"] in ("sca", "container")
@@ -149,7 +156,7 @@ def main(argv: list[str] | None = None) -> int:
             "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>", cwd=args.root)
         if not args.dry_run:
             run("git", "push", "-q", "-f", "-u", "origin", branch, cwd=args.root)
-            run("gh", "pr", "create", "--draft", "--base", args.base, "--head", branch, "--title", title,
+            run("gh", "pr", "create", "--repo", args.repo, "--draft", "--base", args.base, "--head", branch, "--title", title,
                 "--label", LABEL, "--body", pr_body(c, version, how), cwd=args.root)
         print(f"{'verified' if args.dry_run else 'opened'} {branch}: {how}", file=sys.stderr)
         opened += 1

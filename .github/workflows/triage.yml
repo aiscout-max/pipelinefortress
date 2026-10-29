@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  GH_REPO: ${{ github.repository }}  # gh must never resolve to the upstream fork parent
   GITLEAKS_VERSION: 8.30.1
 
 jobs:
