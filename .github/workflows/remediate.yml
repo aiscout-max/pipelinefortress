@@ -1,0 +1,64 @@
+name: GenAI remediation PRs
+
+# Triggered by a human after reading the triage report. Opens at most three
+# draft PRs, each verified by a scanner re-run, all labelled ai-generated.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: genai-remediation
+  cancel-in-progress: false
+
+env:
+  GH_REPO: ${{ github.repository }}  # gh must never resolve to the upstream fork parent
+  NODE_VERSION: 24
+  TRIVY_VERSION: 0.76.1
+  MAX_PRS: 3
+
+jobs:
+  remediate:
+    name: Open verified remediation PRs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write       # push ai-fix/* branches
+      pull-requests: write  # open draft PRs
+      issues: write         # create the ai-generated label
+      actions: write        # dispatch the pipeline on each PR branch
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Fetch the latest triage report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id=$(gh run list --workflow triage.yml --status success --limit 1 --json databaseId -q '.[0].databaseId')
+          echo "triage run: ${run_id}" >> "$GITHUB_STEP_SUMMARY"
+          gh run download "$run_id" -n genai-triage -D reports/triage
+      - name: Install Trivy
+        run: security/install-tools.sh trivy
+      - name: Patch, re-scan and open PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh label create ai-generated --color 5319e7 --description "Opened by fortress.remediate; needs human review" --force
+          python3 -m fortress.remediate --triage reports/triage/triage.json --max-prs "$MAX_PRS"
+      # PRs opened with GITHUB_TOKEN do not trigger pull_request workflows,
+      # so run the full pipeline on each branch explicitly.
+      - name: Run the pipeline on each remediation branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for branch in $(git ls-remote --heads origin 'ai-fix/*' | awk '{print $2}' | sed 's#refs/heads/##'); do
+            gh workflow run pipeline.yml --ref "$branch"
+            echo "pipeline dispatched on ${branch}" >> "$GITHUB_STEP_SUMMARY"
+          done

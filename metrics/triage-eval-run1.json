@@ -1,0 +1,253 @@
+{
+  "confusion": {
+    "TP": 12,
+    "FP": 7,
+    "FN": 0,
+    "TN": 0
+  },
+  "precision_real": 0.632,
+  "recall_real": 1.0,
+  "noise_caught": 0.0,
+  "accuracy": 0.632,
+  "mean_priority_real": 4.0,
+  "mean_priority_fp": 4.571,
+  "judged": 19,
+  "uncertain": [
+    "C003"
+  ],
+  "not_judged": [
+    {
+      "cluster": "C005",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C006",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C007",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C008",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C088",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C089",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C116",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C117",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C153",
+      "status": "needs human triage",
+      "rejected_because": []
+    },
+    {
+      "cluster": "C186",
+      "status": "needs human triage",
+      "rejected_because": []
+    }
+  ],
+  "validation": {
+    "findings": 365,
+    "clusters": 196,
+    "sent_to_model": 30,
+    "accepted": 20,
+    "rejected": 0,
+    "hallucinated_ids": 0,
+    "withheld_secrets": 68,
+    "blocked_payloads": 0
+  },
+  "rows": [
+    {
+      "cluster": "C001",
+      "key": "tar",
+      "label": "fp",
+      "outcome": "FP",
+      "category": "sca",
+      "priority": 5,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C002",
+      "key": "jsonwebtoken",
+      "label": "real",
+      "outcome": "TP",
+      "category": "sca",
+      "priority": 2,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C004",
+      "key": "crypto-js",
+      "label": "fp",
+      "outcome": "FP",
+      "category": "sca",
+      "priority": 5,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C009",
+      "key": "moment",
+      "label": "fp",
+      "outcome": "FP",
+      "category": "sca",
+      "priority": 4,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C010",
+      "key": "jws",
+      "label": "real",
+      "outcome": "TP",
+      "category": "sca",
+      "priority": 1,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C017",
+      "key": "routes/login.ts",
+      "label": "real",
+      "outcome": "TP",
+      "category": "sast",
+      "priority": 2,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C018",
+      "key": "routes/search.ts",
+      "label": "real",
+      "outcome": "TP",
+      "category": "sast",
+      "priority": 2,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C019",
+      "key": "frontend/src/app/login/login.component.ts",
+      "label": "real",
+      "outcome": "TP",
+      "category": "sast",
+      "priority": 3,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C072",
+      "key": "routes/userProfile.ts:65",
+      "label": "real",
+      "outcome": "TP",
+      "category": "sast",
+      "priority": 1,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C090",
+      "key": "routes/trackOrder.ts",
+      "label": "real",
+      "outcome": "TP",
+      "category": "sast",
+      "priority": 2,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C091",
+      "key": "routes/address.ts",
+      "label": "fp",
+      "outcome": "FP",
+      "category": "sast",
+      "priority": 3,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C092",
+      "key": "routes/basket.ts",
+      "label": "fp",
+      "outcome": "FP",
+      "category": "sast",
+      "priority": 3,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C093",
+      "key": "routes/basketItems.ts",
+      "label": "fp",
+      "outcome": "FP",
+      "category": "sast",
+      "priority": 3,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C114",
+      "key": "terraform: subnet public IP",
+      "label": "real",
+      "outcome": "TP",
+      "category": "iac",
+      "priority": 6,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C118",
+      "key": "terraform: log retention",
+      "label": "real",
+      "outcome": "TP",
+      "category": "iac",
+      "priority": 7,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C119",
+      "key": "terraform: ECS read-only root",
+      "label": "real",
+      "outcome": "TP",
+      "category": "iac",
+      "priority": 6,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C152",
+      "key": "ZAP 10038-1 CSP",
+      "label": "real",
+      "outcome": "TP",
+      "category": "dast",
+      "priority": 8,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C187",
+      "key": "ZAP 90004-3 COOP",
+      "label": "real",
+      "outcome": "TP",
+      "category": "dast",
+      "priority": 8,
+      "model_fp_reason": ""
+    },
+    {
+      "cluster": "C188",
+      "key": "ZAP 10110 dangerous JS functions",
+      "label": "fp",
+      "outcome": "FP",
+      "category": "dast",
+      "priority": 9,
+      "model_fp_reason": ""
+    }
+  ]
+}
