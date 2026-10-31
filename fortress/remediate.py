@@ -109,7 +109,7 @@ re-scanned before this PR was opened.
 - [ ] The upgrade does not change behaviour the app relies on (check the changelog for breaking changes)
 - [ ] Review notes added below
 
-The rationale and fix text were written by Gemini; triage, redaction, validation and the patch are fortress tooling.
+The rationale and fix text were written by `{cluster.get('model', 'the model')}`; triage, redaction, validation and the patch are fortress tooling.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 """

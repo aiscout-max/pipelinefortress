@@ -7,7 +7,7 @@ was checked byte-for-byte against `triage-system-v1.md`.
 
 | Prompt | Used by | Model | Output contract |
 |---|---|---|---|
-| [`triage-system-v1.md`](triage-system-v1.md) | `fortress/triage.py` (system instruction) | `gemini-flash-latest`, temperature 0 | JSON matching `RESPONSE_SCHEMA` in `triage.py` |
+| [`triage-system-v1.md`](triage-system-v1.md) | `fortress/triage.py` (system instruction) | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` via OpenRouter, falling back to `gemini-flash-latest`; temperature 0 | JSON matching `RESPONSE_SCHEMA` in `triage.py` |
 
 ## How the prompts are written
 
@@ -25,7 +25,10 @@ was checked byte-for-byte against `triage-system-v1.md`.
    rationale, 3 to 5 fix lines, and a likely-false-positive flag with a reason.
    Every field is checked.
 5. **Structured output enforced by the API**, not by asking nicely:
-   `responseMimeType: application/json` plus a `responseSchema`.
+   `responseMimeType: application/json` plus a `responseSchema` on Gemini, and
+   the same schema as a strict `response_format: json_schema` on OpenRouter.
+   Both providers get the identical prompt and data, so a fallback does not
+   change what the audit log says was sent.
 
 ## Changelog
 

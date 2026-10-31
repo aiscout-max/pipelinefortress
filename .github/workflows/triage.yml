@@ -35,7 +35,8 @@ jobs:
           echo "source run: ${run_id}" | tee -a "$GITHUB_STEP_SUMMARY"
           gh run download "$run_id" -n consolidated-findings -D reports
       - name: Triage (redacted payloads only)
-        env:
+        env:  # OpenRouter first; Gemini is the fallback when it is down or rate-limited
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python3 -m fortress.triage --findings reports/findings.json -o reports/triage
       # Proof for the redaction rubric: scan exactly what was sent to the model.

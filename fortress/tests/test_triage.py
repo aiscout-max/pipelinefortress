@@ -13,6 +13,10 @@ def findings_with_duplicates():
     return findings
 
 
+OPENROUTER_ONLY = [("openrouter", "test-model", "key")]
+BOTH = [("openrouter", "primary-model", "key"), ("gemini", "fallback-model", "key")]
+
+
 def cluster_for(clusters, **match):
     return next(c for c in clusters if all(c.get(k) == v for k, v in match.items()))
 
@@ -43,7 +47,7 @@ def test_validation_rejects_invented_ids_and_versions():
 def test_triage_accepts_valid_rejects_invalid_and_never_sends_secrets(tmp_path, monkeypatch):
     sent = []
 
-    def fake_gemini(payload, model, api_key):
+    def fake_openrouter(payload, model, api_key, delays):
         sent.append(payload)
         ids = [line.split('"')[3] for line in payload.splitlines() if '"cluster_id"' in line]
         results = [{"cluster_id": ids[0], "priority": 1, "rationale": "Real risk.",
@@ -52,13 +56,14 @@ def test_triage_accepts_valid_rejects_invalid_and_never_sends_secrets(tmp_path, 
                     "fix": ["a", "b", "c"], "likely_false_positive": False}]
         return {"results": results}  # every other cluster gets no answer
 
-    monkeypatch.setattr(triage, "gemini", fake_gemini)
-    result = triage.triage(findings_with_duplicates(), tmp_path / "audit", "test-model", "key", dry_run=False)
+    monkeypatch.setattr(triage, "openrouter", fake_openrouter)
+    result = triage.triage(findings_with_duplicates(), tmp_path / "audit", OPENROUTER_ONLY, dry_run=False)
 
     stats = result["stats"]
     assert stats["accepted"] == 1 and stats["hallucinated_ids"] == 1
     assert stats["rejected"] == stats["sent_to_model"] - 1
     assert stats["withheld_secrets"] == 1
+    assert stats["answered_by"] == {"test-model": stats["sent_to_model"]}
     secret = next(c for c in result["clusters"] if c["category"] == "secrets")
     assert secret["status"] == "withheld: secret" and secret["fix"] == triage.SECRET_ADVICE
     audited = "".join(p.read_text() for p in (tmp_path / "audit").iterdir())
@@ -70,19 +75,41 @@ def test_network_failure_marks_batch_for_humans_instead_of_crashing(tmp_path, mo
     def stalled(*_args):
         raise TimeoutError("The read operation timed out")
 
+    monkeypatch.setattr(triage, "openrouter", stalled)
     monkeypatch.setattr(triage, "gemini", stalled)
-    result = triage.triage(all_findings(), tmp_path / "audit", "test-model", "key", dry_run=False)
+    result = triage.triage(all_findings(), tmp_path / "audit", BOTH, dry_run=False)
     sent = [c for c in result["clusters"] if c["category"] != "secrets"]
     assert {c["status"] for c in sent} == {"needs human triage"}
     assert {c["rationale"] for c in sent} == {"Model call failed (TimeoutError)."}
+
+
+def test_unavailable_provider_falls_back_to_the_next(tmp_path, monkeypatch):
+    calls = []
+
+    def unavailable(payload, model, api_key, delays):
+        calls.append((model, delays))
+        raise TimeoutError("The read operation timed out")
+
+    def answers(payload, model, api_key, delays):
+        calls.append((model, delays))
+        return {"results": []}
+
+    monkeypatch.setattr(triage, "openrouter", unavailable)
+    monkeypatch.setattr(triage, "gemini", answers)
+    result = triage.triage(all_findings(), tmp_path / "audit", BOTH, dry_run=False)
+    assert result["stats"]["answered_by"] == {"fallback-model": result["stats"]["sent_to_model"]}
+    # The primary gets one quick retry before falling over; the last provider gets the full backoff.
+    assert calls[:2] == [("primary-model", triage.RETRY_DELAYS[:1]), ("fallback-model", triage.RETRY_DELAYS)]
+    assert result["models"] == ["primary-model", "fallback-model"]
 
 
 def test_dry_run_audits_without_calling_the_model(tmp_path, monkeypatch):
     def boom(*_args):
         raise AssertionError("model must not be called in a dry run")
 
+    monkeypatch.setattr(triage, "openrouter", boom)
     monkeypatch.setattr(triage, "gemini", boom)
-    result = triage.triage(all_findings(), tmp_path / "audit", "test-model", None, dry_run=True)
+    result = triage.triage(all_findings(), tmp_path / "audit", [], dry_run=True)
     assert result["stats"]["sent_to_model"] > 0
     assert list((tmp_path / "audit").iterdir())
 

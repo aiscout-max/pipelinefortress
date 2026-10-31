@@ -3,13 +3,16 @@
 Division of labour:
 - Code does everything that must be exact: clustering duplicates, choosing
   what is eligible, redaction, and checking every identifier the model writes.
-- The model (Gemini, via REST) does what code cannot: weigh exploitability in
-  context, explain the risk, and draft a 3-5 line fix.
+- The model (via REST) does what code cannot: weigh exploitability in
+  context, explain the risk, and draft a 3-5 line fix. Providers are tried in
+  order (OpenRouter, then Gemini); a batch falls back to the next one when a
+  provider is down, rate-limited or answers with something unparseable.
 - A suggestion that fails validation is dropped and the cluster is marked for
   human triage. The tool never fills a gap with a guess.
 
 usage: python3 -m fortress.triage --findings reports/findings.json -o reports/triage
-       (needs GEMINI_API_KEY; --dry-run builds and audits the payloads without sending)
+       (needs OPENROUTER_API_KEY and/or GEMINI_API_KEY; --dry-run builds and audits
+       the payloads without sending)
 """
 from __future__ import annotations
 
@@ -28,8 +31,13 @@ from . import severity_rank
 from .redact import NEVER_SEND_CATEGORIES, RedactionError, Redactor
 from .remediate import target_version
 
-DEFAULT_MODEL = "gemini-flash-latest"
-RETRY_DELAYS = [10, 30, 90]  # seconds
+# (provider, API key variable, model variable, default model), in fallback order.
+PROVIDERS = [
+    ("openrouter", "OPENROUTER_API_KEY", "OPENROUTER_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"),
+    ("gemini", "GEMINI_API_KEY", "GEMINI_MODEL", "gemini-flash-latest"),
+]
+RETRY_DELAYS = [10, 30, 90]  # seconds; a provider with a fallback behind it gets only the first
+RETRY_CODES = (429, 500, 502, 503, 504)
 REQUEST_TIMEOUT = 300  # seconds; a loaded free tier can take minutes per batch
 BATCH_SIZE = 10
 MAX_CLUSTERS = 30
@@ -140,7 +148,31 @@ def select_for_model(clusters: list[dict], limit: int = MAX_CLUSTERS) -> list[di
 
 # ------------------------------------------------------------------- model I/O
 
-def gemini(payload_text: str, model: str, api_key: str) -> dict:
+def failure_reason(err: Exception) -> str:
+    return f"HTTP {err.code}" if isinstance(err, urllib.error.HTTPError) else type(err).__name__
+
+
+def post_json(req: urllib.request.Request, delays: list[int]) -> dict:
+    # Under load free tiers answer 429/503 or simply stall; back off and
+    # retry rather than give up on the batch.
+    for attempt, delay in enumerate(delays + [None]):
+        try:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
+                return json.load(resp)
+        except urllib.error.HTTPError as err:
+            if err.code not in RETRY_CODES or delay is None:
+                raise
+            reason = f"HTTP {err.code}"
+        except (TimeoutError, ConnectionError) as err:
+            if delay is None:
+                raise
+            reason = type(err).__name__
+        print(f"model call failed ({reason}); retry {attempt + 1} in {delay}s", file=sys.stderr)
+        time.sleep(delay)
+    raise AssertionError("unreachable")
+
+
+def gemini(payload_text: str, model: str, api_key: str, delays: list[int]) -> dict:
     prompt, _, data = payload_text.partition("\n\nDATA:\n")
     body = {
         "systemInstruction": {"parts": [{"text": prompt}]},
@@ -153,24 +185,57 @@ def gemini(payload_text: str, model: str, api_key: str) -> dict:
         data=json.dumps(body).encode(),
         headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
     )
-    # Under load the free tier answers 429/503 or simply stalls; back off and
-    # retry rather than give up on the batch.
-    for attempt, delay in enumerate(RETRY_DELAYS + [None]):
+    answer = post_json(req, delays)
+    return json.loads(answer["candidates"][0]["content"]["parts"][0]["text"])
+
+
+def json_schema(schema: dict) -> dict:
+    """RESPONSE_SCHEMA (Gemini's OpenAPI dialect) as strict JSON Schema for OpenAI-style APIs."""
+    out = {**schema, "type": schema["type"].lower()}
+    if "properties" in schema:
+        out["properties"] = {k: json_schema(v) for k, v in schema["properties"].items()}
+        out["required"] = list(schema["properties"])  # strict mode wants every key
+        out["additionalProperties"] = False
+    if "items" in schema:
+        out["items"] = json_schema(schema["items"])
+    return out
+
+
+def openrouter(payload_text: str, model: str, api_key: str, delays: list[int]) -> dict:
+    prompt, _, data = payload_text.partition("\n\nDATA:\n")
+    body = {
+        "model": model,
+        "temperature": 0,
+        "reasoning": {"enabled": True},  # reasoning comes back in its own field, not in content
+        "messages": [{"role": "system", "content": prompt}, {"role": "user", "content": "DATA:\n" + data}],
+        "response_format": {"type": "json_schema", "json_schema": {
+            "name": "triage", "strict": True, "schema": json_schema(RESPONSE_SCHEMA)}},
+    }
+    req = urllib.request.Request(
+        "https://openrouter.ai/api/v1/chat/completions",
+        data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}",
+                 "X-Title": "PipelineFortress"},
+    )
+    answer = post_json(req, delays)
+    if "error" in answer:  # upstream failures can arrive inside an HTTP 200
+        raise ValueError(f"OpenRouter error: {answer['error']}")
+    return json.loads(answer["choices"][0]["message"]["content"])
+
+
+def ask_model(payload_text: str, providers: list[tuple[str, str, str]]) -> tuple[str, dict]:
+    """(model, answer) from the first provider that answers; the last one's error propagates."""
+    for n, (name, model, api_key) in enumerate(providers):
+        last = n == len(providers) - 1
+        call = {"openrouter": openrouter, "gemini": gemini}[name]
         try:
-            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
-                answer = json.load(resp)
-            return json.loads(answer["candidates"][0]["content"]["parts"][0]["text"])
-        except urllib.error.HTTPError as err:
-            if err.code not in (429, 500, 503) or delay is None:
+            return model, call(payload_text, model, api_key, RETRY_DELAYS if last else RETRY_DELAYS[:1])
+        except (OSError, KeyError, ValueError) as err:  # OSError covers URLError and timeouts
+            if last:
                 raise
-            reason = f"HTTP {err.code}"
-        except (TimeoutError, ConnectionError) as err:
-            if delay is None:
-                raise
-            reason = type(err).__name__
-        print(f"model call failed ({reason}); retry {attempt + 1} in {delay}s", file=sys.stderr)
-        time.sleep(delay)
-    raise AssertionError("unreachable")
+            print(f"{model} failed ({failure_reason(err)}); falling back to {providers[n + 1][1]}",
+                  file=sys.stderr)
+    raise ValueError("no model provider configured")
 
 
 def outbound_view(cluster: dict, redactor: Redactor) -> dict:
@@ -210,11 +275,12 @@ def validate(result: dict, cluster: dict) -> list[str]:
 
 # ---------------------------------------------------------------------- triage
 
-def triage(findings: list[dict], audit_dir: Path, model: str, api_key: str | None, dry_run: bool) -> dict:
+def triage(findings: list[dict], audit_dir: Path, providers: list[tuple[str, str, str]], dry_run: bool) -> dict:
     redactor = Redactor(audit_dir=audit_dir)
     clusters = build_clusters(findings)
     stats = {"findings": len(findings), "clusters": len(clusters), "sent_to_model": 0, "accepted": 0,
-             "rejected": 0, "hallucinated_ids": 0, "withheld_secrets": 0, "blocked_payloads": 0}
+             "rejected": 0, "hallucinated_ids": 0, "withheld_secrets": 0, "blocked_payloads": 0,
+             "answered_by": {}}
     for c in clusters:
         if c["category"] in NEVER_SEND_CATEGORIES:
             c.update(status="withheld: secret", priority=1, fix=SECRET_ADVICE,
@@ -240,12 +306,12 @@ def triage(findings: list[dict], audit_dir: Path, model: str, api_key: str | Non
                 c["status"] = "dry run: payload audited, not sent"
             continue
         try:
-            answer = gemini(payload, model, api_key or "")
-        except (OSError, KeyError, ValueError) as err:  # OSError covers URLError and timeouts
-            reason = f"HTTP {err.code}" if isinstance(err, urllib.error.HTTPError) else type(err).__name__
+            model, answer = ask_model(payload, providers)
+        except (OSError, KeyError, ValueError) as err:
             for c in batch:
-                c.update(status="needs human triage", rationale=f"Model call failed ({reason}).")
+                c.update(status="needs human triage", rationale=f"Model call failed ({failure_reason(err)}).")
             continue
+        stats["answered_by"][model] = stats["answered_by"].get(model, 0) + len(batch)
         by_id = {r.get("cluster_id"): r for r in answer.get("results", [])}
         for c in batch:
             result = by_id.get(c["cluster_id"])
@@ -258,6 +324,7 @@ def triage(findings: list[dict], audit_dir: Path, model: str, api_key: str | Non
             stats["accepted"] += 1
             c.update(
                 status="triaged",
+                model=model,
                 priority=result["priority"],
                 rationale=redactor.ps.restore(result["rationale"]),
                 fix=[redactor.ps.restore(line) for line in result["fix"]],
@@ -268,13 +335,15 @@ def triage(findings: list[dict], audit_dir: Path, model: str, api_key: str | Non
     order = {"withheld: secret": 0, "triaged": 1}
     clusters.sort(key=lambda c: (order.get(c["status"], 2), c.get("priority", 11),
                                  -severity_rank(c["severity"]), c["cluster_id"]))
-    return {"model": model, "stats": stats, "clusters": clusters}
+    return {"models": [model for _, model, _ in providers], "stats": stats, "clusters": clusters}
 
 
 def render_markdown(result: dict, top: int = 15) -> str:
     s = result["stats"]
+    answered = ", ".join(f"`{m}` {n}" for m, n in s["answered_by"].items()) or "none"
     out = ["# GenAI triage", "",
-           f"Model `{result['model']}`. {s['findings']} findings → {s['clusters']} clusters. "
+           f"Models, in fallback order: {' → '.join(f'`{m}`' for m in result['models']) or 'none'} "
+           f"(clusters answered: {answered}). {s['findings']} findings → {s['clusters']} clusters. "
            f"{s['sent_to_model']} clusters sent after redaction; {s['accepted']} suggestions accepted, "
            f"{s['rejected']} rejected by validation ({s['hallucinated_ids']} for invented identifiers). "
            f"{s['withheld_secrets']} secret clusters were never sent.", "",
@@ -297,16 +366,18 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--findings", type=Path, required=True)
     p.add_argument("-o", "--output", type=Path, required=True, help="output directory")
-    p.add_argument("--model", default=os.environ.get("GEMINI_MODEL", DEFAULT_MODEL))
     p.add_argument("--dry-run", action="store_true", help="build and audit payloads without calling the model")
     args = p.parse_args(argv)
 
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key and not args.dry_run:
-        print("GEMINI_API_KEY is not set (use --dry-run to audit payloads only)", file=sys.stderr)
+    # Every provider whose key is set, in fallback order; models via OPENROUTER_MODEL / GEMINI_MODEL.
+    providers = [(name, os.environ.get(model_var) or default, os.environ[key_var])
+                 for name, key_var, model_var, default in PROVIDERS if os.environ.get(key_var)]
+    if not providers and not args.dry_run:
+        print("Neither OPENROUTER_API_KEY nor GEMINI_API_KEY is set (use --dry-run to audit payloads only)",
+              file=sys.stderr)
         return 2
     result = triage(json.loads(args.findings.read_text()), args.output / "llm-audit",
-                    args.model, api_key, args.dry_run)
+                    providers, args.dry_run)
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "triage.json").write_text(json.dumps(result, indent=2) + "\n")
     (args.output / "triage.md").write_text(render_markdown(result))
